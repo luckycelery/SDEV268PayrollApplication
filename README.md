@@ -1,40 +1,42 @@
+## 📁 Project Structure
 
+```plaintext
 abc-payroll-python/
-│
 ├── README.md                      # Project overview, setup instructions, feature list
 ├── .gitignore                     # Ignore virtual env, __pycache__, etc.
-│
-├── /src/                          # Python source code
-│   ├── /ui/                       # UI logic (Tkinter or Flask views)
-│   ├── /models/                   # Data models (Employee, Payroll, etc.)
-│   ├── /controllers/              # Business logic and validation
-│   ├── /utils/                    # Helper functions (e.g., tax calculations)
+
+├── src/                           # Python source code
+│   ├── ui/                        # UI logic (Tkinter or Flask views)
+│   ├── models/                    # Data models (Employee, Payroll, etc.)
+│   ├── controllers/               # Business logic and validation
+│   ├── utils/                     # Helper functions (e.g., tax calculations)
 │   └── main.py                    # Entry point
-│
-├── /database/                     # Database files and schema
+
+├── database/                      # Database files and schema
 │   ├── payroll.db                 # SQLite database
 │   └── schema.sql                 # SQL schema (optional)
-│
-├── /docs/                         # Documentation
+
+├── docs/                          # Documentation
 │   ├── project-plan.md            # Step-by-step development plan
 │   ├── uml-diagrams/              # UML diagrams for actors and classes
 │   ├── user-guide.md              # User-friendly documentation
 │   ├── security.md                # Security protocols and login logic
 │   └── weekly-tasks.md            # 8-week breakdown
-│
-├── /testing/                      # Testing logs and screenshots
+
+├── testing/                       # Testing logs and screenshots
 │   ├── initial-testing-log.md     # Pre-testing checklist
 │   ├── final-testing-log.md       # Completed test results
 │   ├── screenshots/               # Error messages, passed test cases
 │   └── test-cases.xlsx            # Structured test matrix
-│
-├── /data/                         # Demo data for testing
+
+├── data/                          # Demo data for testing
 │   ├── employee_profiles.xlsx     # 12 fictional employees
 │   └── addresses.xlsx             # Mock addresses
-│
-└── /submission/                   # Final deliverables
+
+└── submission/                    # Final deliverables
     ├── payroll-report.pdf         # HR sign-off report
     └── payroll-output.txt         # Final payroll file for printing
+
 
 
 tables: employees: personal info, job title, pay type, etc.
