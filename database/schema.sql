@@ -1,7 +1,7 @@
 -- =============================================================================
 -- ABC Company Payroll System - Database Schema
 -- Python + SQLite3 + tkinter
--- Week 4 of 8 - Schema Lock Version
+-- Schema Lock Version
 -- =============================================================================
 
 -- Drop existing tables if recreating database
@@ -35,11 +35,11 @@ CREATE TABLE job_titles (
 -- =============================================================================
 
 CREATE TABLE employees (
-    employee_id TEXT PRIMARY KEY,              -- E001, E002, etc.
+    employee_id TEXT PRIMARY KEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
-    surname TEXT,                               -- Middle name or suffix (Sr., Jr.)
-    date_of_birth TEXT NOT NULL,                -- ISO format: YYYY-MM-DD
+    surname TEXT,
+    date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL CHECK(gender IN ('Male', 'Female')),
     email TEXT NOT NULL UNIQUE,
     address_line1 TEXT NOT NULL,
@@ -47,17 +47,16 @@ CREATE TABLE employees (
     city TEXT NOT NULL,
     state TEXT NOT NULL,
     zip_code TEXT NOT NULL,
-    has_picture INTEGER NOT NULL DEFAULT 0,     -- Boolean: 1 if picture exists, 0 otherwise
-    picture_filename TEXT,                      -- e.g., "E001.jpg" if has_picture = 1
+    has_picture INTEGER NOT NULL DEFAULT 0,
+    picture_filename TEXT,
     status TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active', 'Terminated')),
-    date_hired TEXT NOT NULL,                   -- ISO format: YYYY-MM-DD
+    date_hired TEXT NOT NULL,
     department_id INTEGER NOT NULL,
     job_title_id INTEGER NOT NULL,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (department_id) REFERENCES departments(department_id),
     FOREIGN KEY (job_title_id) REFERENCES job_titles(job_title_id)
-    -- Age validation (18+) should be done at application level
 );
 
 -- =============================================================================
@@ -66,13 +65,13 @@ CREATE TABLE employees (
 
 CREATE TABLE compensation (
     compensation_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id TEXT NOT NULL UNIQUE,          -- One active compensation per employee
+    employee_id TEXT NOT NULL UNIQUE,
     salary_type TEXT NOT NULL CHECK(salary_type IN ('Salary', 'Hourly')),
-    base_salary REAL,                          -- Annual salary for salaried employees
-    hourly_rate REAL,                          -- Hourly rate for hourly employees
+    base_salary REAL,
+    hourly_rate REAL,
     medical_type TEXT NOT NULL CHECK(medical_type IN ('Single', 'Family')),
     num_dependents INTEGER NOT NULL DEFAULT 0 CHECK(num_dependents >= 0),
-    effective_date TEXT NOT NULL,              -- When this compensation started
+    effective_date TEXT NOT NULL,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
@@ -86,14 +85,19 @@ CREATE TABLE compensation (
 -- AUTHENTICATION & USER ACCOUNTS
 -- =============================================================================
 
+-- HR0001 for admin, email prefix for employees
+-- SHA256 hash (upgrade to bcrypt later)
+-- employee_id NULL for Admin users
+-- is_active for soft delete
+-- last_login is ISO timestamp of last login
 CREATE TABLE users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,             -- HR0001 for admin, email prefix for employees
-    password_hash TEXT NOT NULL,               -- SHA256 hash (upgrade to bcrypt later)
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
     user_type TEXT NOT NULL CHECK(user_type IN ('Admin', 'Employee')),
-    employee_id TEXT,                          -- NULL for Admin users
-    is_active INTEGER NOT NULL DEFAULT 1,      -- Soft delete: 0 = disabled, 1 = active
-    last_login TEXT,                           -- ISO timestamp of last login
+    employee_id TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    last_login TEXT,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 );
@@ -102,13 +106,18 @@ CREATE TABLE users (
 -- PAYROLL PERIODS
 -- =============================================================================
 
+-- ISO format: YYYY-MM-DD (Monday) for period_start_date
+-- ISO format: YYYY-MM-DD (Sunday) for period_end_date
+-- processed_date: NULL until payroll is calculated
+-- is_locked: 1 = locked, no more edits allowed
+-- processed_by: Admin username who processed
 CREATE TABLE payroll_periods (
     payroll_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    period_start_date TEXT NOT NULL,           -- ISO format: YYYY-MM-DD (Monday)
-    period_end_date TEXT NOT NULL,             -- ISO format: YYYY-MM-DD (Sunday)
-    processed_date TEXT,                       -- NULL until payroll is calculated
-    is_locked INTEGER NOT NULL DEFAULT 0,      -- 1 = locked, no more edits allowed
-    processed_by TEXT,                         -- Admin username who processed
+    period_start_date TEXT NOT NULL,
+    period_end_date TEXT NOT NULL,
+    processed_date TEXT,
+    is_locked INTEGER NOT NULL DEFAULT 0,
+    processed_by TEXT,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(period_start_date, period_end_date),
     CHECK (date(period_end_date) >= date(period_start_date))
@@ -118,93 +127,119 @@ CREATE TABLE payroll_periods (
 -- TIME ENTRIES (Daily records for each employee)
 -- =============================================================================
 
+-- payroll_id: NULL until assigned to a payroll period
+-- entry_date: ISO format YYYY-MM-DD
+-- is_saturday: Boolean, 1 for Saturday (time and a half)
+-- notes: Optional notes for admin adjustments
+-- UNIQUE constraint: One entry per employee per day
 CREATE TABLE time_entries (
     time_entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id TEXT NOT NULL,
-    payroll_id INTEGER,                        -- NULL until assigned to a payroll period
-    entry_date TEXT NOT NULL,                  -- ISO format: YYYY-MM-DD
+    payroll_id INTEGER,
+    entry_date TEXT NOT NULL,
     day_of_week TEXT NOT NULL CHECK(day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
     hours_worked REAL NOT NULL DEFAULT 0,
     pto_hours REAL NOT NULL DEFAULT 0,
-    is_saturday INTEGER NOT NULL DEFAULT 0,    -- Boolean: 1 for Saturday (time and a half)
-    notes TEXT,                                -- Optional notes for admin adjustments
+    is_saturday INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     FOREIGN KEY (payroll_id) REFERENCES payroll_periods(payroll_id),
-    UNIQUE(employee_id, entry_date),           -- One entry per employee per day
+    UNIQUE(employee_id, entry_date),
     CHECK (hours_worked >= 0 AND hours_worked <= 24),
-    CHECK (pto_hours >= 0 AND pto_hours <= 8), -- Max 8 hours PTO per day
-    CHECK (pto_hours + hours_worked <= 24)     -- Total can't exceed 24 hours
+    CHECK (pto_hours >= 0 AND pto_hours <= 8),
+    CHECK (pto_hours + hours_worked <= 24)
 );
 
 -- =============================================================================
 -- PTO BALANCES (Track accumulated PTO)
 -- =============================================================================
 
+-- total_accrued: Total PTO earned
+-- total_used: Total PTO used
+-- balance: Current balance (accrued - used)
+-- CHECK constraints: Balance can't go negative, max 80 hours PTO balance
 CREATE TABLE pto_balances (
     pto_balance_id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id TEXT NOT NULL UNIQUE,
-    total_accrued REAL NOT NULL DEFAULT 0,     -- Total PTO earned
-    total_used REAL NOT NULL DEFAULT 0,        -- Total PTO used
-    balance REAL NOT NULL DEFAULT 0,           -- Current balance (accrued - used)
+    total_accrued REAL NOT NULL DEFAULT 0,
+    total_used REAL NOT NULL DEFAULT 0,
+    balance REAL NOT NULL DEFAULT 0,
     last_updated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
-    CHECK (balance >= 0),                      -- Can't go negative
-    CHECK (balance <= 80)                      -- Max 80 hours PTO balance
+    CHECK (balance >= 0),
+    CHECK (balance <= 80)
 );
 
 -- =============================================================================
 -- PAYROLL CALCULATION RESULTS
 -- =============================================================================
 
+-- Hours breakdown:
+--   overtime_hours: Hours over 8/day
+--   saturday_hours: Saturday hours (all at 1.5x)
+-- Gross pay calculation:
+--   base_pay: Regular hours * rate
+--   overtime_pay: OT hours * 1.5 * rate
+--   saturday_pay: Saturday hours * 1.5 * rate
+--   gross_pay: Sum of all pay components
+-- Pre-tax deductions (applied to gross):
+--   medical_deduction: $50 single, $100 family
+--   dependent_stipend: $45 per dependent (negative deduction)
+-- Taxable income (after pre-tax adjustments):
+--   taxable_income: gross - medical + stipend
+-- Tax calculations (applied to taxable income):
+--   state_tax: IN 3.15%
+--   federal_tax_employee: 7.65%
+--   social_security_employee: 6.2%
+--   medicare_employee: 1.45%
+-- Net pay (what employee receives):
+--   net_pay: taxable_income - total_employee_taxes
+-- Employer taxes (for reporting, not deducted from employee):
+--   federal_tax_employer: 7.65%
+--   social_security_employer: 6.2%
+--   medicare_employer: 1.45%
+-- UNIQUE constraint: One detail record per employee per payroll
 CREATE TABLE payroll_details (
     payroll_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
     payroll_id INTEGER NOT NULL,
     employee_id TEXT NOT NULL,
     
-    -- Hours breakdown
     regular_hours REAL NOT NULL DEFAULT 0,
-    overtime_hours REAL NOT NULL DEFAULT 0,    -- Hours over 8/day
-    saturday_hours REAL NOT NULL DEFAULT 0,    -- Saturday hours (all at 1.5x)
+    overtime_hours REAL NOT NULL DEFAULT 0,
+    saturday_hours REAL NOT NULL DEFAULT 0,
     pto_hours REAL NOT NULL DEFAULT 0,
     total_hours REAL NOT NULL DEFAULT 0,
     
-    -- Gross pay calculation
-    base_pay REAL NOT NULL DEFAULT 0,          -- Regular hours * rate
-    overtime_pay REAL NOT NULL DEFAULT 0,      -- OT hours * 1.5 * rate
-    saturday_pay REAL NOT NULL DEFAULT 0,      -- Saturday hours * 1.5 * rate
-    gross_pay REAL NOT NULL DEFAULT 0,         -- Sum of all pay components
+    base_pay REAL NOT NULL DEFAULT 0,
+    overtime_pay REAL NOT NULL DEFAULT 0,
+    saturday_pay REAL NOT NULL DEFAULT 0,
+    gross_pay REAL NOT NULL DEFAULT 0,
     
-    -- Pre-tax deductions (applied to gross)
-    medical_deduction REAL NOT NULL DEFAULT 0, -- $50 single, $100 family
-    dependent_stipend REAL NOT NULL DEFAULT 0, -- $45 per dependent (negative deduction)
+    medical_deduction REAL NOT NULL DEFAULT 0,
+    dependent_stipend REAL NOT NULL DEFAULT 0,
     
-    -- Taxable income (after pre-tax adjustments)
-    taxable_income REAL NOT NULL DEFAULT 0,    -- gross - medical + stipend
+    taxable_income REAL NOT NULL DEFAULT 0,
     
-    -- Tax calculations (applied to taxable income)
-    state_tax REAL NOT NULL DEFAULT 0,         -- IN 3.15%
-    federal_tax_employee REAL NOT NULL DEFAULT 0,      -- 7.65%
-    social_security_employee REAL NOT NULL DEFAULT 0,  -- 6.2%
-    medicare_employee REAL NOT NULL DEFAULT 0,         -- 1.45%
+    state_tax REAL NOT NULL DEFAULT 0,
+    federal_tax_employee REAL NOT NULL DEFAULT 0,
+    social_security_employee REAL NOT NULL DEFAULT 0,
+    medicare_employee REAL NOT NULL DEFAULT 0,
     total_employee_taxes REAL NOT NULL DEFAULT 0,
     
-    -- Net pay (what employee receives)
-    net_pay REAL NOT NULL DEFAULT 0,           -- taxable_income - total_employee_taxes
+    net_pay REAL NOT NULL DEFAULT 0,
     
-    -- Employer taxes (for reporting, not deducted from employee)
-    federal_tax_employer REAL NOT NULL DEFAULT 0,      -- 7.65%
-    social_security_employer REAL NOT NULL DEFAULT 0,  -- 6.2%
-    medicare_employer REAL NOT NULL DEFAULT 0,         -- 1.45%
+    federal_tax_employer REAL NOT NULL DEFAULT 0,
+    social_security_employer REAL NOT NULL DEFAULT 0,
+    medicare_employer REAL NOT NULL DEFAULT 0,
     total_employer_taxes REAL NOT NULL DEFAULT 0,
     
-    -- Audit trail
     calculated_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (payroll_id) REFERENCES payroll_periods(payroll_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
-    UNIQUE(payroll_id, employee_id)            -- One detail record per employee per payroll
+    UNIQUE(payroll_id, employee_id)
 );
 
 -- =============================================================================
@@ -346,16 +381,6 @@ BEGIN
     END;
 END;
 
--- =============================================================================
--- INITIAL DATA SETUP FUNCTIONS (via Python)
--- =============================================================================
-
--- This schema is complete and ready for Python integration
--- Next steps:
--- 1. Create sample_data.json with cleaned test data
--- 2. Create load_test_data.py to populate tables
--- 3. Create auth.py for user credential generation
--- 4. Create setup_database.py to orchestrate initialization
 
 -- =============================================================================
 -- END OF SCHEMA
