@@ -56,8 +56,8 @@ CREATE TABLE employees (
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (department_id) REFERENCES departments(department_id),
-    FOREIGN KEY (job_title_id) REFERENCES job_titles(job_title_id),
-    CHECK (date(date_of_birth) <= date('now', '-18 years'))  -- Must be 18+
+    FOREIGN KEY (job_title_id) REFERENCES job_titles(job_title_id)
+    -- Age validation (18+) should be done at application level
 );
 
 -- =============================================================================
