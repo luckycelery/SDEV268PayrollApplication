@@ -1,0 +1,19 @@
+# ABC Payroll System - Requirements
+# Python 3.10+ required
+#
+# This project primarily uses Python standard library modules:
+#   - sqlite3 (built-in)
+#   - tkinter (built-in)
+#   - hashlib (built-in)
+#   - json (built-in)
+#   - pathlib (built-in)
+#
+# No external dependencies are required for basic functionality.
+#
+# Optional dependencies (uncomment if needed):
+# bcrypt==4.1.2   # For enhanced password hashing (Week 5+)
+# Pillow==10.1.0  # For employee picture support
+# pytest==7.4.3   # For unit testing framework
+#
+# Development dependencies (for contributors using pip):
+# ruff>=0.8.0     # For code linting and formatting

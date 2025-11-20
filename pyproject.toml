@@ -1,0 +1,70 @@
+[project]
+name = "abc-payroll"
+version = "0.1.0"
+description = "ABC Company Payroll System"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+]
+enhanced = [
+    "bcrypt>=4.1.2",  # For secure password hashing (future enhancement)
+    "Pillow>=10.1.0",  # For employee pictures
+]
+test = [
+    "pytest>=7.4.3",  # For unit testing
+]
+
+[tool.ruff]
+# Set the maximum line length
+line-length = 120
+
+# Target Python 3.10+
+target-version = "py310"
+
+# Enable specific rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+# Ignore specific rules
+ignore = [
+    "E501",  # line too long (handled by line-length)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+# Exclude directories
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
