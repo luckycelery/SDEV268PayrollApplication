@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
 
+[tool.uv]
+package = false
+
 [project.optional-dependencies]
 dev = [
     "ruff>=0.8.0",
@@ -64,6 +67,9 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = []
 
 [build-system]
 requires = ["hatchling"]
