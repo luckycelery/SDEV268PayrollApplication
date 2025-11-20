@@ -199,6 +199,10 @@ Automatic triggers maintain data integrity:
 Run the automated setup script to create the database with sample data:
 
 ```bash
+# With UV
+uv run setup_database.py
+
+# Or with standard Python
 python setup_database.py
 ```
 
@@ -238,6 +242,10 @@ python database/auth.py
 Verify the database setup with the test script:
 
 ```bash
+# With UV
+uv run database/test_database.py
+
+# Or with standard Python
 python database/test_database.py
 ```
 
@@ -267,7 +275,7 @@ This validates:
 
 **Example:**
 
-```
+```sh
 Email: roy.mustang@abccompany.com
 DOB: 2005-11-06
 Username: roy.mustang

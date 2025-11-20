@@ -27,10 +27,10 @@ cd SDEV268PayrollApplication
 uv sync
 
 # Run the database setup
-uv run python setup_database.py
+uv run setup_database.py
 
 # Run tests
-uv run python database/test_database.py
+uv run database/test_database.py
 ```
 
 ### Adding Dependencies
@@ -51,8 +51,8 @@ uv add --optional enhanced package-name
 ### Running Code
 
 ```bash
-# Run any Python file
-uv run python your_script.py
+# Run any Python script
+uv run your_script.py
 
 # Or activate the virtual environment
 source .venv/bin/activate  # Linux/Mac
