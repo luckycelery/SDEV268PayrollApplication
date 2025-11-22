@@ -413,7 +413,7 @@ N/A due to validation error during Creation testing
 | **Test Case ID** | LOGIN009 |
 | **User Role**    | Admin |
 | **Scenario**     | Login attempt with wrong username |
-| **Input Data**   | Username: HR9999, Password: AbcCoGroup3'25 |
+| **Input Data**   | Username: HR9999, Password: AbccoTeam3 |
 | **Expected Result** | Error message displayed: "Invalid username or password" |
 | **Actual Result**   | Pending |
 | **Screenshot**      | Pending |
@@ -426,7 +426,7 @@ N/A due to validation error during Creation testing
 | **Test Case ID** | LOGIN010 |
 | **User Role**    | Admin |
 | **Scenario**     | Login attempt with missing username |
-| **Input Data**   | Username: [blank], Password: AbcCoGroup3'25 |
+| **Input Data**   | Username: [blank], Password: AbccoTeam3 |
 | **Expected Result** | Error message displayed: "Username is required" |
 | **Actual Result**   | Pending |
 | **Screenshot**      | Pending |
