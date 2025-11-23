@@ -1,92 +1,109 @@
 """
-One-command database initialization script
-Run this to create a fresh database with sample data and user accounts
+One-command database setup script
+Runs schema creation, data loading, and user account creation
 """
-
 import sqlite3
 import sys
 from pathlib import Path
 
-# Add database directory to path
-sys.path.insert(0, str(Path(__file__).parent / "database"))
 
-from auth import setup_all_users
-from load_test_data import load_sample_data
+def run_sql_file(db_path: str, sql_file: str) -> None:
+    """Execute SQL file against database"""
+    print(f"\nExecuting {sql_file}...")
+
+    with open(sql_file) as f:
+        sql_script = f.read()
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.executescript(sql_script)
+        conn.commit()
+        print("  [OK] Schema created successfully")
+    except Exception as e:
+        print(f"  [FAIL] Error creating schema: {e}")
+        sys.exit(1)
+    finally:
+        conn.close()
 
 
-def setup_database():
-    """Initialize complete database with schema, data, and users"""
+def main():
+    """Main setup function"""
+    # Configuration
+    db_path = "payroll.db"
+    schema_file = "database/schema.sql"
+    data_file = "database/sample_data.json"
 
-    DB_PATH = "payroll.db"
-    SCHEMA_PATH = "database/schema.sql"
-    DATA_PATH = "database/sample_data.json"
+    print("=" * 70)
+    print("PAYROLL DATABASE SETUP")
+    print("=" * 70)
+    print("\nThis script will:")
+    print("  1. Create database schema")
+    print("  2. Load test data (with validation)")
+    print("  3. Create user accounts")
+    print("=" * 70)
 
-    # Check if database exists
-    if Path(DB_PATH).exists():
-        print(f"WARNING: Database '{DB_PATH}' already exists!")
-        response = input("Delete and recreate? (yes/no): ").strip().lower()
-        if response != "yes":
+    # Check if database already exists
+    db_exists = Path(db_path).exists()
+    if db_exists:
+        response = input(f"\n[WARNING] {db_path} already exists. Delete and recreate? (yes/no): ")
+        if response.lower() != 'yes':
             print("Setup cancelled.")
             return
-        Path(DB_PATH).unlink()
-        print("Deleted existing database\n")
-
-    print("=" * 60)
-    print("ABC COMPANY PAYROLL SYSTEM - DATABASE SETUP")
-    print("=" * 60)
+        Path(db_path).unlink()
+        print("[OK] Deleted existing database")
 
     # Step 1: Create schema
-    print("\n[1] Creating database schema...")
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        with open(SCHEMA_PATH, "r") as f:
-            conn.executescript(f.read())
-        conn.close()
-        print("   Schema created successfully")
-    except Exception as e:
-        print(f"   ERROR: Schema creation failed: {e}")
-        return
+    print("\n" + "=" * 70)
+    print("STEP 1: CREATING DATABASE SCHEMA")
+    print("=" * 70)
+    run_sql_file(db_path, schema_file)
 
-    # Step 2: Load sample data
-    print("\n[2] Loading sample employee data...")
-    try:
-        load_sample_data(DB_PATH, DATA_PATH)
-    except Exception as e:
-        print(f"   ERROR: Data loading failed: {e}")
-        return
+    # Step 2: Load test data
+    print("\n" + "=" * 70)
+    print("STEP 2: LOADING TEST DATA")
+    print("=" * 70)
+    print("Loading data with graceful error handling...")
+    print("Valid records will be loaded, invalid records will be reported.\n")
+
+    from database.load_data import load_test_data
+    report = load_test_data(db_path, data_file)
+    report.print_summary()
 
     # Step 3: Create user accounts
-    print("\n[3] Creating user accounts...")
-    try:
-        setup_all_users(DB_PATH)
-    except Exception as e:
-        print(f"   ERROR: User creation failed: {e}")
-        return
+    print("\n" + "=" * 70)
+    print("STEP 3: CREATING USER ACCOUNTS")
+    print("=" * 70)
 
-    # Success summary
-    print("\n" + "=" * 60)
-    print("DATABASE SETUP COMPLETE!")
-    print("=" * 60)
-    print(f"\nDatabase file: {DB_PATH}")
-    print(f"Schema: {SCHEMA_PATH}")
-    print(f"Sample data: {DATA_PATH}")
+    from database.auth import setup_all_users
+    setup_all_users(db_path)
 
-    print("\nLOGIN CREDENTIALS:")
-    print("   Admin:")
-    print("     Username: HR0001")
-    print("     Password: AbccoTeam3")
-    print("\n   Employees:")
-    print("     Username: <email_prefix>")
-    print("     Password: <email_prefix><MMDDYYYY>")
-    print("     Example: roy.mustang / roy.mustang11062005")
+    # Final summary
+    print("\n" + "=" * 70)
+    print("SETUP COMPLETE!")
+    print("=" * 70)
 
-    print("\nNEXT STEPS:")
-    print("   1. Test database: python -m database.auth")
-    print("   2. Start GUI development (Week 5)")
-    print("   3. Share DB with team: git push")
-    print("=" * 60)
+    # Verify database
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM employees WHERE status = 'Active'")
+    active_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM users WHERE user_type = 'Employee'")
+    user_count = cursor.fetchone()[0]
+
+    conn.close()
+
+    print("\nDatabase Statistics:")
+    print(f"  Active employees: {active_count}")
+    print(f"  Employee user accounts: {user_count}")
+    print("  Admin accounts: 1")
+
+    if len(report.employees_failed) > 0:
+        print(f"\n[INFO] {len(report.employees_failed)} employee(s) failed validation")
 
 
 if __name__ == "__main__":
-    setup_database()
-    print("Sample data loaded successfully!")
+    main()

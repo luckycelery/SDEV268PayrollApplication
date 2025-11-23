@@ -51,12 +51,12 @@ CREATE TABLE employees (
     picture_filename TEXT,
     status TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active', 'Terminated')),
     date_hired TEXT NOT NULL,
-    department_id INTEGER NOT NULL,
-    job_title_id INTEGER NOT NULL,
+    department_name TEXT NOT NULL,
+    job_title_name TEXT NOT NULL,
     created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(department_id),
-    FOREIGN KEY (job_title_id) REFERENCES job_titles(job_title_id)
+    FOREIGN KEY (department_name) REFERENCES departments(department_name),
+    FOREIGN KEY (job_title_name) REFERENCES job_titles(title_name)
 );
 
 -- =============================================================================
@@ -205,38 +205,38 @@ CREATE TABLE payroll_details (
     payroll_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
     payroll_id INTEGER NOT NULL,
     employee_id TEXT NOT NULL,
-    
+
     regular_hours REAL NOT NULL DEFAULT 0,
     overtime_hours REAL NOT NULL DEFAULT 0,
     saturday_hours REAL NOT NULL DEFAULT 0,
     pto_hours REAL NOT NULL DEFAULT 0,
     total_hours REAL NOT NULL DEFAULT 0,
-    
+
     base_pay REAL NOT NULL DEFAULT 0,
     overtime_pay REAL NOT NULL DEFAULT 0,
     saturday_pay REAL NOT NULL DEFAULT 0,
     gross_pay REAL NOT NULL DEFAULT 0,
-    
+
     medical_deduction REAL NOT NULL DEFAULT 0,
     dependent_stipend REAL NOT NULL DEFAULT 0,
-    
+
     taxable_income REAL NOT NULL DEFAULT 0,
-    
+
     state_tax REAL NOT NULL DEFAULT 0,
     federal_tax_employee REAL NOT NULL DEFAULT 0,
     social_security_employee REAL NOT NULL DEFAULT 0,
     medicare_employee REAL NOT NULL DEFAULT 0,
     total_employee_taxes REAL NOT NULL DEFAULT 0,
-    
+
     net_pay REAL NOT NULL DEFAULT 0,
-    
+
     federal_tax_employer REAL NOT NULL DEFAULT 0,
     social_security_employer REAL NOT NULL DEFAULT 0,
     medicare_employer REAL NOT NULL DEFAULT 0,
     total_employer_taxes REAL NOT NULL DEFAULT 0,
-    
+
     calculated_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (payroll_id) REFERENCES payroll_periods(payroll_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     UNIQUE(payroll_id, employee_id)
@@ -248,7 +248,7 @@ CREATE TABLE payroll_details (
 
 -- Employee lookups
 CREATE INDEX idx_employees_status ON employees(status);
-CREATE INDEX idx_employees_department ON employees(department_id);
+CREATE INDEX idx_employees_department ON employees(department_name);
 CREATE INDEX idx_employees_email ON employees(email);
 CREATE INDEX idx_employees_last_name ON employees(last_name);
 
@@ -273,7 +273,7 @@ CREATE INDEX idx_users_employee ON users(employee_id);
 
 -- View: Employee full information (demographics + compensation)
 CREATE VIEW vw_employee_full AS
-SELECT 
+SELECT
     e.employee_id,
     e.first_name,
     e.last_name,
@@ -299,14 +299,14 @@ SELECT
     c.num_dependents,
     COALESCE(p.balance, 0) AS pto_balance
 FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-JOIN job_titles j ON e.job_title_id = j.job_title_id
+JOIN departments d ON e.department_name = d.department_name
+JOIN job_titles j ON e.job_title_name = j.title_name
 JOIN compensation c ON e.employee_id = c.employee_id
 LEFT JOIN pto_balances p ON e.employee_id = p.employee_id;
 
 -- View: Weekly time entry summary per employee
 CREATE VIEW vw_weekly_time_summary AS
-SELECT 
+SELECT
     te.employee_id,
     te.payroll_id,
     strftime('%Y-%W', te.entry_date) AS year_week,
@@ -326,8 +326,8 @@ CREATE TRIGGER trg_employees_update_modified
 AFTER UPDATE ON employees
 FOR EACH ROW
 BEGIN
-    UPDATE employees 
-    SET modified_date = CURRENT_TIMESTAMP 
+    UPDATE employees
+    SET modified_date = CURRENT_TIMESTAMP
     WHERE employee_id = NEW.employee_id;
 END;
 
@@ -336,8 +336,8 @@ CREATE TRIGGER trg_compensation_update_modified
 AFTER UPDATE ON compensation
 FOR EACH ROW
 BEGIN
-    UPDATE compensation 
-    SET modified_date = CURRENT_TIMESTAMP 
+    UPDATE compensation
+    SET modified_date = CURRENT_TIMESTAMP
     WHERE compensation_id = NEW.compensation_id;
 END;
 
@@ -346,8 +346,8 @@ CREATE TRIGGER trg_time_entries_update_modified
 AFTER UPDATE ON time_entries
 FOR EACH ROW
 BEGIN
-    UPDATE time_entries 
-    SET modified_date = CURRENT_TIMESTAMP 
+    UPDATE time_entries
+    SET modified_date = CURRENT_TIMESTAMP
     WHERE time_entry_id = NEW.time_entry_id;
 END;
 
@@ -360,7 +360,7 @@ BEGIN
     -- Ensure employee has PTO balance record
     INSERT OR IGNORE INTO pto_balances (employee_id, total_accrued, total_used, balance)
     VALUES (NEW.employee_id, 0, 0, 0);
-    
+
     -- Update PTO usage
     UPDATE pto_balances
     SET total_used = total_used + NEW.pto_hours,
