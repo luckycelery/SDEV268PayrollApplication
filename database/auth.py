@@ -5,12 +5,11 @@ User authentication and credential generation for payroll system
 import hashlib
 import sqlite3
 from datetime import datetime
-from typing import Optional, Tuple
 
 
 def generate_employee_username(email: str) -> str:
     """
-    Generate username from employee email (part before @)
+    Generate username from employee email
 
     Args:
         email: Employee email address (e.g., roy.mustang@abccompany.com)
@@ -18,7 +17,7 @@ def generate_employee_username(email: str) -> str:
     Returns:
         Username (e.g., roy.mustang)
     """
-    return email.split("@")[0].lower()
+    return email.lower()
 
 
 def generate_employee_password(email: str, dob: str) -> str:
@@ -49,7 +48,7 @@ def hash_password(password: str) -> str:
     """
     Hash password using SHA256
 
-    Note: This is Week 4 implementation. Week 5+ should upgrade to bcrypt
+    Note: Potentially upgrade to bcrypt
 
     Args:
         password: Plain text password
@@ -152,7 +151,7 @@ def create_employee_accounts(conn: sqlite3.Connection) -> int:
 
 def authenticate_user(
     conn: sqlite3.Connection, username: str, password: str
-) -> Optional[Tuple[str, str, Optional[str]]]:
+) -> tuple[str, str, str | None] | None:
     """
     Authenticate a user login attempt
 
@@ -191,8 +190,8 @@ def authenticate_user(
     # Update last login
     cursor.execute(
         """
-        UPDATE users 
-        SET last_login = ? 
+        UPDATE users
+        SET last_login = ?
         WHERE username = ?
     """,
         (datetime.now().isoformat(), username),

@@ -75,7 +75,6 @@ class DataLoadReport:
 
         if total_failed > 0:
             print(f"WARNING: {total_failed} total validation error(s) found!")
-            print("These errors prove your validation logic is working correctly.")
         else:
             print("SUCCESS: All records loaded without errors!")
         print("=" * 70 + "\n")

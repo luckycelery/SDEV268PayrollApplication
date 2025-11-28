@@ -269,7 +269,7 @@
     {
       "employee_id": "E001",
       "salary_type": "Salary",
-      "base_salary": 30000,
+      "base_salary": 156000,
       "hourly_rate": null,
       "medical_type": "Single",
       "num_dependents": 0,
@@ -278,7 +278,7 @@
     {
       "employee_id": "E002",
       "salary_type": "Salary",
-      "base_salary": 50000,
+      "base_salary": 260000,
       "hourly_rate": null,
       "medical_type": "Single",
       "num_dependents": 0,
@@ -287,7 +287,7 @@
     {
       "employee_id": "E003",
       "salary_type": "Salary",
-      "base_salary": 4000,
+      "base_salary": 208000,
       "hourly_rate": null,
       "medical_type": "Single",
       "num_dependents": 3,
@@ -296,7 +296,7 @@
     {
       "employee_id": "E004",
       "salary_type": "Salary",
-      "base_salary": 45000,
+      "base_salary": 234000,
       "hourly_rate": null,
       "medical_type": "Single",
       "num_dependents": 1,
@@ -305,7 +305,7 @@
     {
       "employee_id": "E005",
       "salary_type": "Salary",
-      "base_salary": 34000,
+      "base_salary": 176800,
       "hourly_rate": null,
       "medical_type": "Family",
       "num_dependents": 2,
@@ -359,7 +359,7 @@
     {
       "employee_id": "E011",
       "salary_type": "Salary",
-      "base_salary": 3000,
+      "base_salary": 156000,
       "hourly_rate": null,
       "medical_type": "Single",
       "num_dependents": 0,
