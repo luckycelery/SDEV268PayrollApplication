@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details</title>
+    <link rel="stylesheet" href="PayrollStyle.css">
+    <link rel="stylesheet" href="normalize.css">
+
+</head>
+
+<body>
+    <h1>Employee Time Entry</h1>
+    <label for="employee first name">Employee First Name:</label><br>
+    <div id="employeefirstname" class="display-box">--</div>
+<!-- how to combine the first and last names together!?-->
+
+    <h3>Work Entry</h3>
+
+    <label for="date">Date:</label><br>
+    <input type="date" id="work date" name="work date" required><br><br>
+
+    <label for="time worked">Time Worked (in hours):</label><br>
+    <input type="number" id="work time" name="work time" required><br><br>
+
+    <h3>PTO Entry</h3>
+
+    <label for="date">Date:</label><br>
+    <input type="date" id="pto date" name="pto date" required><br><br>
+
+    <label for="pto worked">Time PTO (in hours):</label><br>
+    <input type="number" id="pto time" name="pto time" required><br><br>
+
+    <button type="enter">Enter</button><br><br>
+    <button type="edit">Edit</button><br><br> <!--why an edit? needed?-->
+    <button type="calculate paycheck">Calculate Paycheck</button><br><br>
+    <button type="logout">Logout</button><br><br>
+
+
+
+
+</body>
+</html>

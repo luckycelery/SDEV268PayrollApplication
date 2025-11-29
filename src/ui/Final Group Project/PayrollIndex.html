@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC Payroll Login</title>
+    <link rel="stylesheet" href="PayrollStyle.css">
+    <link rel="stylesheet" href="normalize.css">
+
+</head>
+
+<body>
+<div class="logintype-container">
+    <h1>ABC Payroll Company LOGIN</h1>
+    <h3>Please Choose 'Admin' or 'Employee'</h3>
+    <form action="process_login.php" method="POST">
+        <form>
+  <label>
+    <input type="radio" name="user_type" value="admin"> Admin
+  </label>
+  <br>
+  <label>
+    <input type="radio" name="user_type" value="employee"> Employee
+  </label>
+  <br>
+  <br>
+    <h3>Please enter your login credentials</h3>
+</div>
+</form>
+
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br><br>
+        
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        
+        <input type="submit" value="Login">
+</div>
+</body>
+</html>
