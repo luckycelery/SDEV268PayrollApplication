@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Management</title>
+    <link rel="stylesheet" href="PayrollStyle.css">
+    <link rel="stylesheet" href="normalize.css">
+</head>
+<body>
+
+    <h1>Payroll Management</h1>
+
+    <label for="date">Starting Date:</label><br>
+    <input type="date" id="work date"    name="work date" required><br><br>
+
+    <label for="date">End Date:</label><br>
+    <input type="date" id="work date" name="work date" required><br><br>
+
+    <button type="lockentries">Lock Timecard</button><br><br> <!-- do we need this??-->
+    <button type="generatereport">Generate Report</button><br><br>
+
+<div class="info-container"></div>
+
+<div class="info-row">
+    <span class="info-label">Pay Period:</span>
+    <div id="payperiod" class="display-box">--</div>
+</div>
+
+<div class="info-row">
+    <span class="info-label">Gross Pay:</span>
+    <div id="grosspay" class="display-box">--</div>
+</div>
+
+<div class="info-row">
+    <span class="info-label">Net Pay:</span>
+    <div id="netpay" class="display-box">--</div>
+</div>
+</div>
+
+<button type="save">Save</button><br><br>
+<button type="print">Print</button><br><br>
+<button type="logout">Logout</button><br><br>
+
+
+</body>
+</html>

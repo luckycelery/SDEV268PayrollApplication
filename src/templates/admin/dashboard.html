@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+        <p class="text-muted">Welcome to the ABC Payroll Administration Portal</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total Employees</h6>
+                        <h2 class="mb-0">{{ employee_count }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1"></i>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.employee_list') }}" class="text-white text-decoration-none">
+                    View All <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Current Pay Period</h6>
+                        <h5 class="mb-0">Ready</h5>
+                    </div>
+                    <i class="bi bi-calendar-week fs-1"></i>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('payroll.current_period') }}" class="text-white text-decoration-none">
+                    View Payroll <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Quick Actions</h6>
+                        <h5 class="mb-0">Admin</h5>
+                    </div>
+                    <i class="bi bi-lightning fs-1"></i>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.employee_add') }}" class="text-white text-decoration-none">
+                    Add Employee <i class="bi bi-plus-circle"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Employee Management</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('admin.employee_list') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people me-2"></i>View All Employees
+                </a>
+                <a href="{{ url_for('admin.employee_add') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-plus me-2"></i>Add New Employee
+                </a>
+                <a href="{{ url_for('admin.employee_list') }}?search=" class="list-group-item list-group-item-action">
+                    <i class="bi bi-search me-2"></i>Search Employees
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Payroll Management</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('payroll.current_period') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-calendar-check me-2"></i>Current Pay Period
+                </a>
+                <a href="{{ url_for('payroll.payroll_list') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-archive me-2"></i>Payroll History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

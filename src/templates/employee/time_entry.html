@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Time Entry - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-clock me-2"></i>Time Entry</h1>
+        <p class="text-muted">Current Pay Period: {{ start_date }} to {{ end_date }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Entry Form -->
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Time Entry</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="entry_date" class="form-label">Date *</label>
+                        <input type="date" class="form-control" id="entry_date" name="entry_date"
+                               min="{{ start_date }}" max="{{ end_date }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hours_worked" class="form-label">Hours Worked</label>
+                        <input type="number" class="form-control" id="hours_worked" name="hours_worked"
+                               step="0.5" min="0" max="24" value="0">
+                        <div class="form-text">Over 8 hours = overtime (1.5x)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pto_hours" class="form-label">PTO Hours</label>
+                        <input type="number" class="form-control" id="pto_hours" name="pto_hours"
+                               step="0.5" min="0" max="8" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Add Entry
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Entries -->
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list me-2"></i>This Week's Entries</h5>
+            </div>
+            <div class="card-body">
+                {% if entries %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Hours</th>
+                                <th>PTO</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.entry_date }}</td>
+                                <td>{{ entry.day_of_week }}</td>
+                                <td>{{ entry.hours_worked }}</td>
+                                <td>{{ entry.pto_hours }}</td>
+                                <td>{{ entry.total_hours }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="2">Weekly Total</th>
+                                <th>{{ entries | sum(attribute='hours_worked') }}</th>
+                                <th>{{ entries | sum(attribute='pto_hours') }}</th>
+                                <th>{{ entries | sum(attribute='total_hours') }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No time entries for this period.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
