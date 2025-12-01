@@ -7,14 +7,37 @@ A comprehensive payroll management system for ABC Company, built with Python and
 ### Prerequisites
 
 - Python 3.10 or higher
-- Standard library only (no external dependencies required)
+- Flask 3.1.2+ (installed via uv or pip)
+
+### Installation
+
+1. **Clone the repository**
+
+```bash
+git clone <repository-url>
+cd SDEV268PayrollApplication
+```
+
+2. **Install dependencies**
+
+Using UV (recommended):
+
+```bash
+uv sync
+```
+
+Or using pip:
+
+```bash
+pip install -r requirements.txt
+```
 
 ### Database Setup
 
 Set up the complete database with sample data in one command:
 
 ```bash
-python setup_database.py
+uv run python src/utils/setup_database.py
 ```
 
 This creates the database, schema, sample employees, and user accounts automatically.
@@ -22,15 +45,60 @@ This creates the database, schema, sample employees, and user accounts automatic
 **Default Login Credentials:**
 
 - Admin: `HR0001` / `AbccoTeam3`
-- Employees: `<email_prefix>` / `<email_prefix><MMDDYYYY>`
-  - Example: `roy.mustang` / `roy.mustang11062005`
+- Employees: `<email>` / `<email_prefix><MMDDYYYY>`
+  - Example: `roy.mustang@abccompany.com` / `roy.mustang11062005`
+
+### Running the Application
+
+Start the Flask web server:
+
+```bash
+uv run flask run
+```
+
+Or:
+
+```bash
+uv run python app.py
+```
+
+The application will be available at: <http://127.0.0.1:5000>
+
+## Features
+
+### Web-Based Interface
+
+- **Modern Flask web application** with responsive HTML/CSS interface
+- **Role-based access control** (Admin vs. Employee)
+- **Session-based authentication** with secure password hashing
+
+### Admin Functionality
+
+- **Employee Management**: Add, edit, delete, and search employees
+- **Payroll Management**: Calculate and process payroll for pay periods
+- **Compensation Management**: Set and update salary/hourly rates and benefits
+- **Time Entry Approval**: Review and adjust employee time entries
+- **Reporting**: Generate payroll reports for HR sign-off
+
+### Employee Functionality
+
+- **Time Entry**: Submit daily hours worked and PTO requests
+- **Paycheck Viewing**: View calculated paychecks with detailed breakdowns
+- **PTO Balance**: Track available paid time off
+
+### Automated Calculations
+
+- **Gross Pay**: Regular hours + overtime (1.5x) + Saturday premium (1.5x)
+- **Deductions**: Medical insurance, federal/state taxes, Social Security, Medicare
+- **Dependent Stipend**: $45 per dependent per pay period
+- **Tax Calculations**: Indiana state (3.15%), Federal (7.65%), SS (6.2%), Medicare (1.45%)
 
 ### Testing the Database
 
 Verify everything is set up correctly:
 
 ```bash
-python database/test_database.py
+uv run python database/test_database.py
 ```
 
 For detailed database documentation, see [docs/database-setup.md](docs/database-setup.md).
@@ -38,26 +106,46 @@ For detailed database documentation, see [docs/database-setup.md](docs/database-
 ## Project Structure
 
 ```sh
-abc-payroll-python/
+SDEV268PayrollApplication/
 ├── README.md                      # Project overview, setup instructions
 ├── pyproject.toml                 # Project configuration (UV/Ruff)
 ├── requirements.txt               # Pip dependencies (for non-UV users)
 ├── .gitignore                     # Ignore patterns
+├── app.py                         # Flask application entry point
 │
 ├── src/                           # Python source code
-│   ├── ui/                        # UI logic (Tkinter views)
+│   ├── __init__.py                # Flask application factory
+│   ├── routes/                    # Flask route blueprints
+│   │   ├── auth.py                # Login/logout routes
+│   │   ├── admin.py               # Admin functionality routes
+│   │   ├── employee.py            # Employee self-service routes
+│   │   └── payroll.py             # Payroll management routes
+│   ├── templates/                 # Jinja2 HTML templates
+│   │   ├── base.html              # Base template with nav
+│   │   ├── login.html             # Login page
+│   │   ├── admin/                 # Admin templates
+│   │   ├── employee/              # Employee templates
+│   │   └── payroll/               # Payroll templates
+│   ├── static/                    # Static assets (CSS, JS, images)
+│   │   ├── css/                   # Stylesheets
+│   │   ├── js/                    # JavaScript files
+│   │   └── images/                # Images and logos
 │   ├── models/                    # Data models (Employee, Payroll, etc.)
 │   ├── controllers/               # Business logic and validation
-│   ├── utils/                     # Helper functions (tax calculations)
-│   └── main.py                    # Application entry point
+│   └── utils/                     # Helper functions and constants
+│       ├── constants.py           # Path configuration and constants
+│       ├── setup_database.py      # Database initialization script
+│       ├── load_time_entries.py   # Time entry data loader
+│       └── calculate_payroll.py   # Payroll calculation utility
 │
 ├── database/                      # Database files and utilities
-│   ├── payroll.db                 # SQLite database (generated)
 │   ├── schema.sql                 # Database schema definition
 │   ├── sample_data.json           # Test employee data
-│   ├── load_test_data.py          # Data loading script
+│   ├── load_data.py               # Data loading script
 │   ├── auth.py                    # Authentication utilities
 │   └── test_database.py           # Database validation tests
+│
+├── payroll.db                     # SQLite database (generated)
 │
 ├── docs/                          # Documentation
 │   ├── database-setup.md          # Database setup and reference
@@ -85,26 +173,43 @@ abc-payroll-python/
 
 This project supports both **UV** (fast, modern) and **pip** (traditional) workflows.
 
-**For UV users:**
+### Development Workflow
+
+**Install dependencies:**
 
 ```bash
-uv sync                          # Install dependencies
-uv run python setup_database.py  # Run scripts
+uv sync                                      # Using UV (recommended)
+# or
+pip install -r requirements.txt              # Using pip
 ```
 
-**For pip users:**
+**Database setup:**
 
 ```bash
-python -m venv .venv             # Create virtual environment
-.venv\Scripts\activate           # Activate (Windows)
-python setup_database.py         # Run scripts
+uv run python src/utils/setup_database.py    # Initialize database
+uv run python src/utils/load_time_entries.py # Load sample time entries
 ```
 
-**Code formatting/linting:**
+**Run the application:**
 
 ```bash
-ruff format .                    # Format code
-ruff check --fix .              # Fix linting issues
+uv run flask run                             # Start Flask dev server
+# or
+uv run python app.py                         # Alternative entry point
+```
+
+**Code quality:**
+
+```bash
+ruff format .                                # Format code
+ruff check --fix .                           # Fix linting issues
+```
+
+**Testing:**
+
+```bash
+pytest                                       # Run unit tests
+uv run python database/test_database.py      # Database validation
 ```
 
 For detailed setup instructions, see [docs/development-setup.md](docs/development-setup.md).
@@ -114,7 +219,7 @@ For detailed setup instructions, see [docs/development-setup.md](docs/developmen
 The system uses SQLite with the following core tables:
 
 - **employees** - Personal info, job title, pay type, status
-- **departments** - Organizational departments  
+- **departments** - Organizational departments
 - **job_titles** - Job position definitions
 - **compensation** - Salary/hourly rates, benefits
 - **users** - Login credentials and roles (admin, employee)
