@@ -31,9 +31,9 @@ def run_sql_file(db_path: str, sql_file: str) -> None:
 def main():
     """Main setup function"""
     # Configuration
-    db_path = "payroll.db"
-    schema_file = "database/schema.sql"
-    data_file = "database/sample_data.json"
+    db_path = "../../payroll.db"
+    schema_file = "../../database/schema.sql"
+    data_file = "../../database/sample_data.json"
 
     print("=" * 70)
     print("PAYROLL DATABASE SETUP")

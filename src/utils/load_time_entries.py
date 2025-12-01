@@ -21,7 +21,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = "payroll.db"
+DB_PATH = "../../payroll.db"
 
 
 def get_day_of_week(date_str: str) -> str:
@@ -38,7 +38,7 @@ def is_saturday(date_str: str) -> int:
 def main():
     """Main entry point."""
     # Determine CSV file path
-    csv_path = sys.argv[1] if len(sys.argv) > 1 else "data/sample_time_entries.csv"
+    csv_path = sys.argv[1] if len(sys.argv) > 1 else "../../data/sample_time_entries.csv"
 
     if not Path(csv_path).exists():
         print(f"Error: File not found: {csv_path}")
