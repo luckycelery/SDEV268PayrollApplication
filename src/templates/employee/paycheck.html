@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}My Paychecks - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-wallet2 me-2"></i>My Paychecks</h1>
+        <p class="text-muted">View your paycheck history</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if payroll_history %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Pay Period</th>
+                        <th>Hours</th>
+                        <th>Gross Pay</th>
+                        <th>Deductions</th>
+                        <th>Net Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payroll in payroll_history %}
+                    <tr>
+                        <td>Week of {{ payroll.period_start_date if payroll.period_start_date else 'N/A' }}</td>
+                        <td>{{ payroll.total_hours }}</td>
+                        <td>${{ "%.2f" | format(payroll.gross_pay) }}</td>
+                        <td>${{ "%.2f" | format(payroll.total_employee_taxes + payroll.medical_deduction) }}</td>
+                        <td><strong>${{ "%.2f" | format(payroll.net_pay) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-wallet fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No paycheck history available.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

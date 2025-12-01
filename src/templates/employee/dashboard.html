@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-house me-2"></i>Employee Dashboard</h1>
+        <p class="text-muted">Welcome to your employee portal</p>
+    </div>
+</div>
+
+{% if employee %}
+<!-- Employee Info Card -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person me-2"></i>My Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ employee.first_name }} {{ employee.last_name }}</p>
+                <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+                <p><strong>Department:</strong> {{ employee.department_name }}</p>
+                <p><strong>Job Title:</strong> {{ employee.job_title_name }}</p>
+                <p><strong>Email:</strong> {{ employee.email }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('employee.time_entry') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-clock-history me-2"></i>Enter Time
+                </a>
+                <a href="{{ url_for('employee.paycheck') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-wallet2 me-2"></i>View Paychecks
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Your employee profile is not yet linked to your account. Please contact HR.
+</div>
+{% endif %}
+{% endblock %}

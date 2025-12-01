@@ -6,15 +6,22 @@ import sqlite3
 import sys
 from pathlib import Path
 
+from constants import DB_PATH, PROJECT_ROOT, SAMPLE_DATA_FILE, SCHEMA_FILE
 
-def run_sql_file(db_path: str, sql_file: str) -> None:
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from database.auth import setup_all_users
+from database.load_data import load_test_data
+
+
+def run_sql_file(db_path: Path, sql_file: Path) -> None:
     """Execute SQL file against database"""
-    print(f"\nExecuting {sql_file}...")
+    print(f"\nExecuting {sql_file.name}...")
 
     with open(sql_file) as f:
         sql_script = f.read()
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
     try:
@@ -30,10 +37,10 @@ def run_sql_file(db_path: str, sql_file: str) -> None:
 
 def main():
     """Main setup function"""
-    # Configuration
-    db_path = "payroll.db"
-    schema_file = "database/schema.sql"
-    data_file = "database/sample_data.json"
+    # Configuration from constants
+    db_path = DB_PATH
+    schema_file = SCHEMA_FILE
+    data_file = SAMPLE_DATA_FILE
 
     print("=" * 70)
     print("PAYROLL DATABASE SETUP")
@@ -45,13 +52,12 @@ def main():
     print("=" * 70)
 
     # Check if database already exists
-    db_exists = Path(db_path).exists()
-    if db_exists:
+    if db_path.exists():
         response = input(f"\n[WARNING] {db_path} already exists. Delete and recreate? (yes/no): ")
         if response.lower() != 'yes':
             print("Setup cancelled.")
             return
-        Path(db_path).unlink()
+        db_path.unlink()
         print("[OK] Deleted existing database")
 
     # Step 1: Create schema
@@ -67,8 +73,7 @@ def main():
     print("Loading data with graceful error handling...")
     print("Valid records will be loaded, invalid records will be reported.\n")
 
-    from database.load_data import load_test_data
-    report = load_test_data(db_path, data_file)
+    report = load_test_data(str(db_path), str(data_file))
     report.print_summary()
 
     # Step 3: Create user accounts
@@ -76,8 +81,7 @@ def main():
     print("STEP 3: CREATING USER ACCOUNTS")
     print("=" * 70)
 
-    from database.auth import setup_all_users
-    setup_all_users(db_path)
+    setup_all_users(str(db_path))
 
     # Final summary
     print("\n" + "=" * 70)
@@ -85,7 +89,7 @@ def main():
     print("=" * 70)
 
     # Verify database
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
     cursor.execute("SELECT COUNT(*) FROM employees WHERE status = 'Active'")

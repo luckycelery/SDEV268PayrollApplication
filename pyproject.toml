@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "ABC Company Payroll System"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "flask>=3.1.2",
+]
 
 [tool.uv]
 package = false
@@ -68,9 +70,18 @@ indent-style = "space"
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [tool.hatch.build.targets.wheel]
-packages = []
+packages = ["src"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+]

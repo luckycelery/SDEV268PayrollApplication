@@ -1,0 +1,76 @@
+normalize.css
+
+
+
+.logintype-container {
+    margin-bottom: 20px;
+    font-size: large;
+    font-weight: bold;
+    color: #ece0e0;
+}
+
+body {
+    font-family: 'Times New Roman', serif; /* Simplified font stack */
+    text-align: center;
+    font-size: large;
+    background-color: #62cccc;
+
+}
+ 
+button {
+    font-size: large;
+    font-weight: bold;
+    background-color: #ece0e0;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.info-container {
+    max-width: 400px;
+    margin: 20px 0;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.info-label {
+    font-weight: bold;
+}
+
+.display-box {
+    padding: 5px 10px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    min-width: 150px;
+    text-align: right;
+
+}
+
+.hours-container {
+    width: 100%;
+    max-width: 750px;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.hours-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 equal-sized columns */
+    gap: 10px; /* space between columns */
+    margin-bottom: 10px;
+}
+
+.hours-cell {
+    padding: 8px 10px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+}
+
+.header-row .hours-cell {
+    font-weight: bold;
+    background-color: #e0e0e0;
+}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if employee else 'Add' }} Employee - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="bi bi-person-{{ 'gear' if employee else 'plus' }} me-2"></i>
+            {{ 'Edit' if employee else 'Add New' }} Employee
+        </h1>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <!-- Personal Information -->
+            <h5 class="border-bottom pb-2 mb-3">
+                <i class="bi bi-person me-2"></i>Personal Information
+            </h5>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="first_name" class="form-label">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name"
+                           value="{{ employee.first_name if employee else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name"
+                           value="{{ employee.last_name if employee else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="surname" class="form-label">Surname (Jr., Sr., etc.)</label>
+                    <input type="text" class="form-control" id="surname" name="surname"
+                           value="{{ employee.surname if employee else '' }}">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="date_of_birth" class="form-label">Date of Birth *</label>
+                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth"
+                           value="{{ employee.date_of_birth if employee else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="gender" class="form-label">Gender *</label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="">Select...</option>
+                        <option value="Male" {{ 'selected' if employee and employee.gender == 'Male' else '' }}>Male</option>
+                        <option value="Female" {{ 'selected' if employee and employee.gender == 'Female' else '' }}>Female</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="{{ employee.email if employee else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="phone_num" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone_num" name="phone_num"
+                           value="{{ employee.phone_num if employee else '' }}"
+                           placeholder="555-555-5555">
+                </div>
+            </div>
+
+            <!-- Address -->
+            <h5 class="border-bottom pb-2 mb-3 mt-4">
+                <i class="bi bi-geo-alt me-2"></i>Address
+            </h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="address_line1" class="form-label">Address Line 1 *</label>
+                    <input type="text" class="form-control" id="address_line1" name="address_line1"
+                           value="{{ employee.address_line1 if employee else '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="address_line2" class="form-label">Address Line 2</label>
+                    <input type="text" class="form-control" id="address_line2" name="address_line2"
+                           value="{{ employee.address_line2 if employee else '' }}">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="city" class="form-label">City *</label>
+                    <input type="text" class="form-control" id="city" name="city"
+                           value="{{ employee.city if employee else '' }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="state" class="form-label">State *</label>
+                    <input type="text" class="form-control" id="state" name="state"
+                           value="{{ employee.state if employee else '' }}" maxlength="2"
+                           placeholder="IN" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="zip_code" class="form-label">ZIP Code *</label>
+                    <input type="text" class="form-control" id="zip_code" name="zip_code"
+                           value="{{ employee.zip_code if employee else '' }}" required>
+                </div>
+            </div>
+
+            <!-- Employment Information -->
+            <h5 class="border-bottom pb-2 mb-3 mt-4">
+                <i class="bi bi-briefcase me-2"></i>Employment Information
+            </h5>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="date_hired" class="form-label">Date Hired *</label>
+                    <input type="date" class="form-control" id="date_hired" name="date_hired"
+                           value="{{ employee.date_hired if employee else '' }}"
+                           {{ 'readonly' if employee else '' }} required>
+                </div>
+                <div class="col-md-4">
+                    <label for="department_name" class="form-label">Department *</label>
+                    <select class="form-select" id="department_name" name="department_name" required>
+                        <option value="">Select...</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept }}" {{ 'selected' if employee and employee.department_name == dept else '' }}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="job_title_name" class="form-label">Job Title *</label>
+                    <input type="text" class="form-control" id="job_title_name" name="job_title_name"
+                           value="{{ employee.job_title_name if employee else '' }}" required>
+                </div>
+            </div>
+            {% if employee %}
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="Active" {{ 'selected' if employee.status == 'Active' else '' }}>Active</option>
+                        <option value="Terminated" {{ 'selected' if employee.status == 'Terminated' else '' }}>Terminated</option>
+                    </select>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Compensation (only for new employees) -->
+            {% if not employee %}
+            <h5 class="border-bottom pb-2 mb-3 mt-4">
+                <i class="bi bi-currency-dollar me-2"></i>Compensation
+            </h5>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="salary_type" class="form-label">Pay Type *</label>
+                    <select class="form-select" id="salary_type" name="salary_type" required>
+                        <option value="">Select...</option>
+                        <option value="Salary">Salary</option>
+                        <option value="Hourly">Hourly</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="base_salary" class="form-label">Annual Salary</label>
+                    <input type="number" class="form-control" id="base_salary" name="base_salary"
+                           step="0.01" placeholder="For salaried employees">
+                </div>
+                <div class="col-md-3">
+                    <label for="hourly_rate" class="form-label">Hourly Rate</label>
+                    <input type="number" class="form-control" id="hourly_rate" name="hourly_rate"
+                           step="0.01" placeholder="For hourly employees">
+                </div>
+                <div class="col-md-3">
+                    <label for="medical_type" class="form-label">Medical Coverage *</label>
+                    <select class="form-select" id="medical_type" name="medical_type" required>
+                        <option value="Single">Single ($50/week)</option>
+                        <option value="Family">Family ($100/week)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="num_dependents" class="form-label">Number of Dependents</label>
+                    <input type="number" class="form-control" id="num_dependents" name="num_dependents"
+                           value="0" min="0">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Buttons -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    {{ 'Update' if employee else 'Create' }} Employee
+                </button>
+                <a href="{{ url_for('admin.employee_list') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
