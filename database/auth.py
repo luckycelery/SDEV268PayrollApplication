@@ -165,11 +165,12 @@ def authenticate_user(
     """
     cursor = conn.cursor()
 
+    # Use LOWER() for case-insensitive username matching
     cursor.execute(
         """
         SELECT username, password_hash, user_type, employee_id, is_active
         FROM users
-        WHERE username = ?
+        WHERE LOWER(username) = LOWER(?)
     """,
         (username,),
     )

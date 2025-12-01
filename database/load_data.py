@@ -184,11 +184,11 @@ def load_employees(conn: sqlite3.Connection, data: dict, report: DataLoadReport)
             cursor.execute("""
                 INSERT INTO employees (
                     employee_id, first_name, last_name, surname,
-                    date_of_birth, gender, email,
+                    date_of_birth, gender, email, phone_num,
                     address_line1, address_line2, city, state, zip_code,
                     has_picture, picture_filename, status, date_hired,
                     department_name, job_title_name
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 emp['employee_id'],
                 emp['first_name'],
@@ -197,6 +197,7 @@ def load_employees(conn: sqlite3.Connection, data: dict, report: DataLoadReport)
                 emp['date_of_birth'],
                 emp['gender'],
                 emp['email'],
+                emp.get('phone_num'),
                 emp['address_line1'],
                 emp.get('address_line2'),
                 emp['city'],

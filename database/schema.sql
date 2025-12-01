@@ -21,13 +21,13 @@ DROP TABLE IF EXISTS departments;
 CREATE TABLE departments (
     department_id INTEGER PRIMARY KEY AUTOINCREMENT,
     department_name TEXT NOT NULL UNIQUE,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
 CREATE TABLE job_titles (
     job_title_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title_name TEXT NOT NULL UNIQUE,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
 -- =============================================================================
@@ -42,6 +42,7 @@ CREATE TABLE employees (
     date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL CHECK(gender IN ('Male', 'Female')),
     email TEXT NOT NULL UNIQUE,
+    phone_num TEXT,
     address_line1 TEXT NOT NULL,
     address_line2 TEXT,
     city TEXT NOT NULL,
@@ -53,8 +54,8 @@ CREATE TABLE employees (
     date_hired TEXT NOT NULL,
     department_name TEXT NOT NULL,
     job_title_name TEXT NOT NULL,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    modified_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (department_name) REFERENCES departments(department_name),
     FOREIGN KEY (job_title_name) REFERENCES job_titles(title_name)
 );
@@ -72,8 +73,8 @@ CREATE TABLE compensation (
     medical_type TEXT NOT NULL CHECK(medical_type IN ('Single', 'Family')),
     num_dependents INTEGER NOT NULL DEFAULT 0 CHECK(num_dependents >= 0),
     effective_date TEXT NOT NULL,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    modified_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     CHECK (
         (salary_type = 'Salary' AND base_salary IS NOT NULL AND base_salary > 0 AND hourly_rate IS NULL) OR
@@ -98,7 +99,7 @@ CREATE TABLE users (
     employee_id TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
     last_login TEXT,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 );
 
@@ -118,7 +119,7 @@ CREATE TABLE payroll_periods (
     processed_date TEXT,
     is_locked INTEGER NOT NULL DEFAULT 0,
     processed_by TEXT,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     UNIQUE(period_start_date, period_end_date),
     CHECK (date(period_end_date) >= date(period_start_date))
 );
@@ -142,8 +143,8 @@ CREATE TABLE time_entries (
     pto_hours REAL NOT NULL DEFAULT 0,
     is_saturday INTEGER NOT NULL DEFAULT 0,
     notes TEXT,
-    created_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    modified_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     FOREIGN KEY (payroll_id) REFERENCES payroll_periods(payroll_id),
     UNIQUE(employee_id, entry_date),
@@ -166,7 +167,7 @@ CREATE TABLE pto_balances (
     total_accrued REAL NOT NULL DEFAULT 0,
     total_used REAL NOT NULL DEFAULT 0,
     balance REAL NOT NULL DEFAULT 0,
-    last_updated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_updated TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     CHECK (balance >= 0),
     CHECK (balance <= 80)
@@ -235,7 +236,7 @@ CREATE TABLE payroll_details (
     medicare_employer REAL NOT NULL DEFAULT 0,
     total_employer_taxes REAL NOT NULL DEFAULT 0,
 
-    calculated_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    calculated_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
 
     FOREIGN KEY (payroll_id) REFERENCES payroll_periods(payroll_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
@@ -271,7 +272,7 @@ CREATE INDEX idx_users_employee ON users(employee_id);
 -- VIEWS FOR COMMON QUERIES
 -- =============================================================================
 
--- View: Employee full information (demographics + compensation)
+-- View: Employee full information (demographics + compensation + PTO)
 CREATE VIEW vw_employee_full AS
 SELECT
     e.employee_id,
@@ -281,6 +282,7 @@ SELECT
     e.date_of_birth,
     e.gender,
     e.email,
+    e.phone_num,
     e.address_line1,
     e.address_line2,
     e.city,
@@ -291,12 +293,14 @@ SELECT
     e.status,
     e.date_hired,
     d.department_name,
-    j.title_name AS job_title,
+    j.title_name AS job_title_name,
     c.salary_type,
     c.base_salary,
     c.hourly_rate,
     c.medical_type,
     c.num_dependents,
+    COALESCE(p.total_accrued, 0) AS pto_accrued,
+    COALESCE(p.total_used, 0) AS pto_used,
     COALESCE(p.balance, 0) AS pto_balance
 FROM employees e
 JOIN departments d ON e.department_name = d.department_name
@@ -327,7 +331,7 @@ AFTER UPDATE ON employees
 FOR EACH ROW
 BEGIN
     UPDATE employees
-    SET modified_date = CURRENT_TIMESTAMP
+    SET modified_date = datetime('now', 'localtime')
     WHERE employee_id = NEW.employee_id;
 END;
 
@@ -337,7 +341,7 @@ AFTER UPDATE ON compensation
 FOR EACH ROW
 BEGIN
     UPDATE compensation
-    SET modified_date = CURRENT_TIMESTAMP
+    SET modified_date = datetime('now', 'localtime')
     WHERE compensation_id = NEW.compensation_id;
 END;
 
@@ -347,7 +351,7 @@ AFTER UPDATE ON time_entries
 FOR EACH ROW
 BEGIN
     UPDATE time_entries
-    SET modified_date = CURRENT_TIMESTAMP
+    SET modified_date = datetime('now', 'localtime')
     WHERE time_entry_id = NEW.time_entry_id;
 END;
 
@@ -365,7 +369,7 @@ BEGIN
     UPDATE pto_balances
     SET total_used = total_used + NEW.pto_hours,
         balance = balance - NEW.pto_hours,
-        last_updated = CURRENT_TIMESTAMP
+        last_updated = datetime('now', 'localtime')
     WHERE employee_id = NEW.employee_id;
 END;
 
