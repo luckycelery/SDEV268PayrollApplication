@@ -4,19 +4,20 @@ Calculate Payroll for a Week
 This script calculates payroll for all employees for a specified week.
 
 Usage:
-    uv run python calculate_payroll.py [start_date] [end_date]
+    uv run python src/utils/calculate_payroll.py [start_date] [end_date]
 
     If no dates are specified, defaults to first week (Nov 3-9, 2025)
 
 Example:
-    uv run python calculate_payroll.py 2025-11-03 2025-11-09
+    uv run python src/utils/calculate_payroll.py 2025-11-03 2025-11-09
 """
 
 import sys
-from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add project root to path for imports
+from constants import PROJECT_ROOT
+
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.controllers.payroll_controller import PayrollController
 from src.models.employee import Employee

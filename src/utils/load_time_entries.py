@@ -5,7 +5,7 @@ This script loads time entry data from a CSV file into the database.
 Uses direct SQL with a single connection for efficiency.
 
 Usage:
-    uv run python load_time_entries.py [csv_file]
+    uv run python src/utils/load_time_entries.py [csv_file]
 
     If no csv_file is specified, defaults to data/sample_time_entries.csv
 
@@ -21,7 +21,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = "../../payroll.db"
+from constants import DB_PATH, SAMPLE_TIME_ENTRIES_FILE
 
 
 def get_day_of_week(date_str: str) -> str:
@@ -38,18 +38,20 @@ def is_saturday(date_str: str) -> int:
 def main():
     """Main entry point."""
     # Determine CSV file path
-    csv_path = sys.argv[1] if len(sys.argv) > 1 else "../../data/sample_time_entries.csv"
+    csv_path = Path(sys.argv[1]) if len(sys.argv) > 1 else SAMPLE_TIME_ENTRIES_FILE
 
-    if not Path(csv_path).exists():
+    if not csv_path.exists():
         print(f"Error: File not found: {csv_path}")
         sys.exit(1)
 
     print("=" * 60)
     print("Loading Sample Time Entries")
     print("=" * 60)
+    print(f"CSV File:    {csv_path}")
+    print(f"Database:    {DB_PATH}")
 
     # Use a SINGLE connection for everything
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn = sqlite3.connect(str(DB_PATH), timeout=30.0)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 

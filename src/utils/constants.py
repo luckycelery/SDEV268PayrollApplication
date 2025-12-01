@@ -4,6 +4,29 @@ Application Constants
 Centralized configuration values used across the payroll system.
 """
 
+from pathlib import Path
+
+# =============================================================================
+# PATH CONFIGURATION
+# =============================================================================
+
+# Project root directory (2 levels up from this file: src/utils/constants.py -> root)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+# Key directories
+DATABASE_DIR = PROJECT_ROOT / "database"
+DATA_DIR = PROJECT_ROOT / "data"
+SRC_DIR = PROJECT_ROOT / "src"
+
+# Database file
+DB_PATH = PROJECT_ROOT / "payroll.db"
+
+# Schema and data files
+SCHEMA_FILE = DATABASE_DIR / "schema.sql"
+SAMPLE_DATA_FILE = DATABASE_DIR / "sample_data.json"
+SAMPLE_TIME_ENTRIES_FILE = DATA_DIR / "sample_time_entries.csv"
+
+
 # =============================================================================
 # APPLICATION METADATA
 # =============================================================================
