@@ -14,12 +14,22 @@ bp = Blueprint("auth", __name__)
 def login():
     """Handle user login."""
     if request.method == "POST":
-        username = request.form.get("username", "").strip().lower()
+        selected_user_type = request.form.get("user_type", "").strip().lower()
+        username = request.form.get("username", "").strip()
+
+        if selected_user_type != "admin":
+            username = username.lower()
+
         password = request.form.get("password", "")
 
         # Basic validation
         if not username or not password:
             flash("Please enter both username and password.", "error")
+            return render_template("auth/login.html")
+
+        # User type must be selected
+        if selected_user_type not in ("admin", "employee"):
+            flash("Please select a user type.", "error")
             return render_template("auth/login.html")
 
         # Authenticate against database
@@ -32,6 +42,16 @@ def login():
                 return render_template("auth/login.html")
 
             auth_username, user_type, employee_id = result
+
+            # Validate selected user type matches actual user type
+            if user_type.lower() != selected_user_type:
+                flash("Invalid login. Please select the correct user type.", "error")
+                return render_template("auth/login.html")
+
+            # Enforce case-sensitive username for admins
+            if user_type == "Admin" and auth_username != username:
+                flash("Invalid username or password.", "error")
+                return render_template("auth/login.html")
 
             # Set session data
             session["user_id"] = employee_id if employee_id else auth_username
