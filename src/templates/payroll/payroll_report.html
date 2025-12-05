@@ -78,6 +78,7 @@
                         <th>Taxes</th>
                         <th>Medical</th>
                         <th>Net Pay</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,6 +93,9 @@
                         <td>${{ "%.2f" | format(d.total_employee_taxes) }}</td>
                         <td>${{ "%.2f" | format(d.medical_deduction) }}</td>
                         <td><strong>${{ "%.2f" | format(d.net_pay) }}</strong></td>
+                        <td><a href="{{ url_for('payroll.view_paycheck_detail', payroll_detail_id=d.payroll_detail_id) }}"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

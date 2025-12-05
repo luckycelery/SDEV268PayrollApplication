@@ -265,10 +265,12 @@ class PayrollDetail(BaseModel):
         base_pay: float = 0.0,
         overtime_pay: float = 0.0,
         saturday_pay: float = 0.0,
+        dependent_stipend: float = 0.0,
         gross_pay: float = 0.0,
         # Deductions
         medical_deduction: float = 0.0,
-        dependent_stipend: float = 0.0,
+        total_employee_deductions: float = 0.0,
+        # Taxable income
         taxable_income: float = 0.0,
         # Employee taxes
         state_tax: float = 0.0,
@@ -286,6 +288,9 @@ class PayrollDetail(BaseModel):
         # Metadata
         payroll_detail_id: int | None = None,
         calculated_date: str | None = None,
+        # Period info (optional - populated from joins)
+        period_start_date: str | None = None,
+        period_end_date: str | None = None,
     ):
         """
         Initialize PayrollDetail with all calculation fields.
@@ -293,6 +298,9 @@ class PayrollDetail(BaseModel):
         self.payroll_detail_id = payroll_detail_id
         self.payroll_id = payroll_id
         self.employee_id = employee_id
+        # Period info (populated by get_by_employee)
+        self.period_start_date = period_start_date
+        self.period_end_date = period_end_date
 
         # Hours
         self.regular_hours = regular_hours
@@ -306,10 +314,13 @@ class PayrollDetail(BaseModel):
         self.overtime_pay = overtime_pay
         self.saturday_pay = saturday_pay
         self.gross_pay = gross_pay
+        self.dependent_stipend = dependent_stipend
 
         # Deductions
         self.medical_deduction = medical_deduction
-        self.dependent_stipend = dependent_stipend
+        self.total_employee_deductions = total_employee_deductions
+
+        # Taxable income
         self.taxable_income = taxable_income
 
         # Employee taxes
@@ -486,7 +497,8 @@ class PayrollDetail(BaseModel):
         """Get payroll history for an employee."""
         if limit:
             query = """
-                SELECT pd.* FROM payroll_details pd
+                SELECT pd.*, pp.period_start_date, pp.period_end_date
+                FROM payroll_details pd
                 JOIN payroll_periods pp ON pd.payroll_id = pp.payroll_id
                 WHERE pd.employee_id = ?
                 ORDER BY pp.period_start_date DESC
@@ -495,7 +507,8 @@ class PayrollDetail(BaseModel):
             params = (employee_id, limit)
         else:
             query = """
-                SELECT pd.* FROM payroll_details pd
+                SELECT pd.*, pp.period_start_date, pp.period_end_date
+                FROM payroll_details pd
                 JOIN payroll_periods pp ON pd.payroll_id = pp.payroll_id
                 WHERE pd.employee_id = ?
                 ORDER BY pp.period_start_date DESC
@@ -508,6 +521,11 @@ class PayrollDetail(BaseModel):
     @classmethod
     def _row_to_payroll_detail(cls, row: sqlite3.Row) -> "PayrollDetail":
         """Convert database row to PayrollDetail object."""
+        # Get optional period info (may not be present in all queries)
+        row_keys = row.keys()
+        period_start = row["period_start_date"] if "period_start_date" in row_keys else None
+        period_end = row["period_end_date"] if "period_end_date" in row_keys else None
+
         return PayrollDetail(
             payroll_detail_id=row["payroll_detail_id"],
             payroll_id=row["payroll_id"],
@@ -522,6 +540,7 @@ class PayrollDetail(BaseModel):
             saturday_pay=row["saturday_pay"],
             gross_pay=row["gross_pay"],
             medical_deduction=row["medical_deduction"],
+            total_employee_deductions=row["medical_deduction"],
             dependent_stipend=row["dependent_stipend"],
             taxable_income=row["taxable_income"],
             state_tax=row["state_tax"],
@@ -535,6 +554,8 @@ class PayrollDetail(BaseModel):
             medicare_employer=row["medicare_employer"],
             total_employer_taxes=row["total_employer_taxes"],
             calculated_date=row["calculated_date"],
+            period_start_date=period_start,
+            period_end_date=period_end,
         )
 
     def to_dict(self) -> dict:
@@ -554,11 +575,11 @@ class PayrollDetail(BaseModel):
                 "base": self.base_pay,
                 "overtime": self.overtime_pay,
                 "saturday": self.saturday_pay,
+                "dependent_stipend": self.dependent_stipend,
                 "gross": self.gross_pay,
             },
             "deductions": {
                 "medical": self.medical_deduction,
-                "dependent_stipend": self.dependent_stipend,
             },
             "taxable_income": self.taxable_income,
             "employee_taxes": {

@@ -10,6 +10,8 @@ Handles:
 from flask import Blueprint, flash, redirect, render_template, session, url_for
 
 from src.controllers.payroll_controller import PayrollController
+from src.models.employee import Employee
+from src.models.payroll import PayrollDetail, PayrollPeriod
 
 bp = Blueprint("payroll", __name__)
 
@@ -126,4 +128,28 @@ def payroll_report(payroll_id):
         period=period,
         summary=summary,
         details=details,
+    )
+
+
+@bp.route("/detail/<int:payroll_detail_id>")
+@admin_required
+def view_paycheck_detail(payroll_detail_id):
+    """Admin view of an individual employee's paycheck detail."""
+
+    detail = PayrollDetail.get_by_id(payroll_detail_id)
+
+    if detail is None:
+        flash("Payroll detail not found.", "error")
+        return redirect(url_for("payroll.payroll_list"))
+
+    period = PayrollPeriod.get_by_id(detail.payroll_id)
+    employee = Employee.get_by_id(detail.employee_id)
+    salary_type = employee.salary_type if employee else None
+
+    return render_template(
+        "employee/paycheck_detail.html",
+        payroll=detail,
+        period=period,
+        is_admin_view=True,
+        salary_type=salary_type,
     )

@@ -23,6 +23,14 @@ def get_departments() -> list[str]:
     return [row["department_name"] for row in rows]
 
 
+def get_job_titles() -> list[str]:
+    """Fetch all job title names from the database."""
+    rows = BaseModel.execute_query(
+        "SELECT title_name FROM job_titles ORDER BY title_name"
+    )
+    return [row["title_name"] for row in rows]
+
+
 # Initialize controller
 employee_controller = EmployeeController()
 
@@ -68,7 +76,7 @@ def employee_list():
     if search_term:
         success, message, employees = employee_controller.search_employees(search_term)
     else:
-        success, message, employees = employee_controller.get_all_employees()
+        success, message, employees = employee_controller.get_all_employees(include_terminated=True)
 
     return render_template(
         "admin/employee_list.html",
@@ -119,6 +127,7 @@ def employee_add():
         "admin/employee_form.html",
         employee=None,
         departments=get_departments(),
+        job_titles=get_job_titles(),
         action="add",
     )
 
@@ -165,6 +174,7 @@ def employee_edit(employee_id):
         "admin/employee_form.html",
         employee=employee,
         departments=get_departments(),
+        job_titles=get_job_titles(),
         action="edit",
     )
 

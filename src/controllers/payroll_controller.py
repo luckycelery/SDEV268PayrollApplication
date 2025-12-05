@@ -397,6 +397,7 @@ class PayrollController:
             detail.federal_tax_employee = tax_data["federal_tax_employee"]
             detail.social_security_employee = tax_data["social_security_employee"]
             detail.medicare_employee = tax_data["medicare_employee"]
+            detail.total_employee_deductions = tax_data["total_employee_deductions"]
             detail.total_employee_taxes = tax_data["total_employee_taxes"]
 
             detail.net_pay = net_data["net_pay"]
@@ -515,6 +516,37 @@ class PayrollController:
             return True, f"Retrieved {len(history)} payroll records", history
         except Exception as e:
             return False, f"Error retrieving payroll history: {e!s}", []
+
+    def get_payroll_detail_by_id(
+        self,
+        payroll_detail_id: int,
+        employee_id: str | None = None,
+    ) -> tuple[bool, str, PayrollDetail | None, PayrollPeriod | None]:
+        """
+        Get a specific payroll detail by its ID, with optional employee verification.
+
+        Args:
+            payroll_detail_id: The payroll detail ID
+            employee_id: Optional employee ID for verification (security check)
+
+        Returns:
+            Tuple of (success, message, payroll_detail, payroll_period)
+        """
+        try:
+            detail = PayrollDetail.get_by_id(payroll_detail_id)
+            if detail is None:
+                return False, "Payroll detail not found", None, None
+
+            # Security check: verify the detail belongs to the employee
+            if employee_id and detail.employee_id != employee_id:
+                return False, "Unauthorized access to payroll detail", None, None
+
+            # Get the associated payroll period
+            period = PayrollPeriod.get_by_id(detail.payroll_id)
+
+            return True, "Payroll detail found", detail, period
+        except Exception as e:
+            return False, f"Error retrieving payroll detail: {e!s}", None, None
 
     def get_payroll_details_for_period(
         self, payroll_id: int

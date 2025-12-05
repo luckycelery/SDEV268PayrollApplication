@@ -14,7 +14,7 @@
     <div class="card-body">
         {% if payroll_history %}
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-hover">
                 <thead class="table-dark">
                     <tr>
                         <th>Pay Period</th>
@@ -22,6 +22,7 @@
                         <th>Gross Pay</th>
                         <th>Deductions</th>
                         <th>Net Pay</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +33,12 @@
                         <td>${{ "%.2f" | format(payroll.gross_pay) }}</td>
                         <td>${{ "%.2f" | format(payroll.total_employee_taxes + payroll.medical_deduction) }}</td>
                         <td><strong>${{ "%.2f" | format(payroll.net_pay) }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('employee.paycheck_detail', payroll_detail_id=payroll.payroll_detail_id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

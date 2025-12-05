@@ -59,13 +59,23 @@ def time_entry():
     # Get current pay period
     start_date, end_date = payroll_controller.get_current_period()
 
+    # Get employee for PTO balance
+    pto_balance = 0.0
+    if employee_id:
+        success, message, employee = employee_controller.get_employee(employee_id)
+        if success and employee:
+            pto_balance = employee.pto_balance
+
     if request.method == "POST":
         entry_date = request.form.get("entry_date", "")
         hours_worked = float(request.form.get("hours_worked") or 0)
         pto_hours = float(request.form.get("pto_hours") or 0)
         notes = request.form.get("notes", "").strip() or None
 
-        if employee_id:
+        # Validate PTO hours against balance
+        if pto_hours > pto_balance:
+            flash(f"PTO hours ({pto_hours}) exceeds available balance ({pto_balance:.2f} hours).", "error")
+        elif employee_id:
             success, message, entry = payroll_controller.submit_time_entry(
                 employee_id=employee_id,
                 entry_date=entry_date,
@@ -76,6 +86,10 @@ def time_entry():
 
             if success:
                 flash(message, "success")
+                # Refresh PTO balance after successful entry
+                success, message, employee = employee_controller.get_employee(employee_id)
+                if success and employee:
+                    pto_balance = employee.pto_balance
             else:
                 flash(message, "error")
 
@@ -91,17 +105,48 @@ def time_entry():
         entries=entries,
         start_date=start_date,
         end_date=end_date,
+        pto_balance=pto_balance,
     )
 
 
-@bp.route("/paycheck")
+@bp.route("/payroll-history")
 @login_required
-def paycheck():
-    """View employee's paycheck history."""
+def payroll_history():
+    """View employee's payroll history."""
     employee_id = session.get("employee_id")
 
     history = []
     if employee_id:
         success, message, history = payroll_controller.get_payroll_history(employee_id, limit=10)
 
-    return render_template("employee/paycheck.html", payroll_history=history)
+    return render_template("employee/payroll_history.html", payroll_history=history)
+
+
+@bp.route("/paycheck/<int:payroll_detail_id>")
+@login_required
+def paycheck_detail(payroll_detail_id):
+    """View detailed paycheck breakdown."""
+    employee_id = session.get("employee_id")
+
+    if not employee_id:
+        flash("Employee ID not found.", "error")
+        return redirect(url_for("employee.payroll_history"))
+
+    success, message, detail, period = payroll_controller.get_payroll_detail_by_id(
+        payroll_detail_id, employee_id
+    )
+
+    if not success or detail is None:
+        flash(message, "error")
+        return redirect(url_for("employee.payroll_history"))
+
+    # Get employee info for salary type
+    success, message, employee = employee_controller.get_employee(employee_id)
+    salary_type = employee.salary_type if success and employee else None
+
+    return render_template(
+        "employee/paycheck_detail.html",
+        payroll=detail,
+        period=period,
+        salary_type=salary_type,
+    )

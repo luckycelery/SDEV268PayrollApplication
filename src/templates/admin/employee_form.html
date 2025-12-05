@@ -120,8 +120,12 @@
                 </div>
                 <div class="col-md-4">
                     <label for="job_title_name" class="form-label">Job Title *</label>
-                    <input type="text" class="form-control" id="job_title_name" name="job_title_name"
-                           value="{{ employee.job_title_name if employee else '' }}" required>
+                    <select class="form-select" id="job_title_name" name="job_title_name" required>
+                        <option value="">Select...</option>
+                        {% for job_title in job_titles %}
+                        <option value="{{ job_title }}" {{ 'selected' if employee and employee.job_title_name == job_title else '' }}>{{ job_title }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
             {% if employee %}
