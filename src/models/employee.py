@@ -34,6 +34,9 @@ class Employee(BaseModel):
     - Uses vw_employee_full view for complete data retrieval
     """
 
+    # Database view for all employee read operations
+    _EMPLOYEE_VIEW = "vw_employee_full"
+
     def __init__(
         self,
         employee_id: str,
@@ -289,38 +292,7 @@ class Employee(BaseModel):
         Returns:
             Employee object or None if not found
         """
-        query = """
-            SELECT
-                e.employee_id,
-                e.first_name,
-                e.last_name,
-                e.surname,
-                e.date_of_birth,
-                e.gender,
-                e.email,
-                e.address_line1,
-                e.address_line2,
-                e.city,
-                e.state,
-                e.zip_code,
-                e.has_picture,
-                e.picture_filename,
-                e.status,
-                e.date_hired,
-                e.department_name,
-                e.job_title_name,
-                c.salary_type,
-                c.base_salary,
-                c.hourly_rate,
-                c.medical_type,
-                c.num_dependents,
-                COALESCE(p.total_accrued, 0) AS pto_accrued,
-                COALESCE(p.total_used, 0) AS pto_used
-            FROM employees e
-            LEFT JOIN compensation c ON e.employee_id = c.employee_id
-            LEFT JOIN pto_balances p ON e.employee_id = p.employee_id
-            WHERE e.employee_id = ?
-        """
+        query = f"SELECT * FROM {cls._EMPLOYEE_VIEW} WHERE employee_id = ?"
         row = cls.execute_single(query, (employee_id,))
 
         if row:
@@ -338,42 +310,12 @@ class Employee(BaseModel):
         Returns:
             List of Employee objects
         """
-        query = """
-            SELECT
-                e.employee_id,
-                e.first_name,
-                e.last_name,
-                e.surname,
-                e.date_of_birth,
-                e.gender,
-                e.email,
-                e.address_line1,
-                e.address_line2,
-                e.city,
-                e.state,
-                e.zip_code,
-                e.has_picture,
-                e.picture_filename,
-                e.status,
-                e.date_hired,
-                e.department_name,
-                e.job_title_name,
-                c.salary_type,
-                c.base_salary,
-                c.hourly_rate,
-                c.medical_type,
-                c.num_dependents,
-                COALESCE(p.total_accrued, 0) AS pto_accrued,
-                COALESCE(p.total_used, 0) AS pto_used
-            FROM employees e
-            LEFT JOIN compensation c ON e.employee_id = c.employee_id
-            LEFT JOIN pto_balances p ON e.employee_id = p.employee_id
-        """
+        query = f"SELECT * FROM {cls._EMPLOYEE_VIEW}"
 
         if not include_terminated:
-            query += " WHERE e.status = 'Active'"
+            query += " WHERE status = 'Active'"
 
-        query += " ORDER BY e.last_name, e.first_name"
+        query += " ORDER BY last_name, first_name"
 
         rows = cls.execute_query(query)
         return [cls._from_row(row) for row in rows]
@@ -389,41 +331,13 @@ class Employee(BaseModel):
         Returns:
             List of matching Employee objects
         """
-        query = """
-            SELECT
-                e.employee_id,
-                e.first_name,
-                e.last_name,
-                e.surname,
-                e.date_of_birth,
-                e.gender,
-                e.email,
-                e.address_line1,
-                e.address_line2,
-                e.city,
-                e.state,
-                e.zip_code,
-                e.has_picture,
-                e.picture_filename,
-                e.status,
-                e.date_hired,
-                e.department_name,
-                e.job_title_name,
-                c.salary_type,
-                c.base_salary,
-                c.hourly_rate,
-                c.medical_type,
-                c.num_dependents,
-                COALESCE(p.total_accrued, 0) AS pto_accrued,
-                COALESCE(p.total_used, 0) AS pto_used
-            FROM employees e
-            LEFT JOIN compensation c ON e.employee_id = c.employee_id
-            LEFT JOIN pto_balances p ON e.employee_id = p.employee_id
-            WHERE e.employee_id LIKE ?
-               OR e.first_name LIKE ?
-               OR e.last_name LIKE ?
-               OR e.email LIKE ?
-            ORDER BY e.last_name, e.first_name
+        query = f"""
+            SELECT * FROM {cls._EMPLOYEE_VIEW}
+            WHERE employee_id LIKE ?
+               OR first_name LIKE ?
+               OR last_name LIKE ?
+               OR email LIKE ?
+            ORDER BY last_name, first_name
         """
         search_pattern = f"%{search_term}%"
         rows = cls.execute_query(
@@ -442,38 +356,10 @@ class Employee(BaseModel):
         Returns:
             List of Employee objects
         """
-        query = """
-            SELECT
-                e.employee_id,
-                e.first_name,
-                e.last_name,
-                e.surname,
-                e.date_of_birth,
-                e.gender,
-                e.email,
-                e.address_line1,
-                e.address_line2,
-                e.city,
-                e.state,
-                e.zip_code,
-                e.has_picture,
-                e.picture_filename,
-                e.status,
-                e.date_hired,
-                e.department_name,
-                e.job_title_name,
-                c.salary_type,
-                c.base_salary,
-                c.hourly_rate,
-                c.medical_type,
-                c.num_dependents,
-                COALESCE(p.total_accrued, 0) AS pto_accrued,
-                COALESCE(p.total_used, 0) AS pto_used
-            FROM employees e
-            LEFT JOIN compensation c ON e.employee_id = c.employee_id
-            LEFT JOIN pto_balances p ON e.employee_id = p.employee_id
-            WHERE e.department_name = ? AND e.status = 'Active'
-            ORDER BY e.last_name, e.first_name
+        query = f"""
+            SELECT * FROM {cls._EMPLOYEE_VIEW}
+            WHERE department_name = ? AND status = 'Active'
+            ORDER BY last_name, first_name
         """
         rows = cls.execute_query(query, (department,))
         return [cls._from_row(row) for row in rows]
@@ -699,6 +585,7 @@ class Employee(BaseModel):
             city=row["city"],
             state=row["state"],
             zip_code=row["zip_code"],
+            phone_num=row["phone_num"],
             has_picture=row["has_picture"],
             picture_filename=row["picture_filename"],
             status=row["status"],
@@ -712,6 +599,7 @@ class Employee(BaseModel):
             num_dependents=row["num_dependents"] or 0,
             pto_accrued=row["pto_accrued"] or 0.0,
             pto_used=row["pto_used"] or 0.0,
+            pto_balance=row["pto_balance"] or 0.0,
         )
 
     def to_dict(self) -> dict:
@@ -736,6 +624,7 @@ class Employee(BaseModel):
             "city": self.city,
             "state": self.state,
             "zip_code": self.zip_code,
+            "phone_num": self.phone_num,
             "has_picture": self.has_picture,
             "picture_filename": self.picture_filename,
             "status": self.status,

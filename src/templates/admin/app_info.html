@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Application Info - ABC Payroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-info-circle me-2"></i>Application Info</h1>
+        <p class="text-muted">About this application</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-app me-2"></i>Application Details</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="text-primary mb-3">ABCPayroll 1.0</h2>
+                <table class="table table-borderless">
+                    <tr>
+                        <th>Version:</th>
+                        <td>1.0</td>
+                    </tr>
+                    <tr>
+                        <th>Project:</th>
+                        <td>SDEV268 Group 3</td>
+                    </tr>
+                    <tr>
+                        <th>Year:</th>
+                        <td>2025</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

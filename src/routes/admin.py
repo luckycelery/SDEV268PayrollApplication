@@ -67,6 +67,13 @@ def dashboard():
     )
 
 
+@bp.route("/app-info")
+@admin_required
+def app_info():
+    """Display application information."""
+    return render_template("admin/app_info.html")
+
+
 @bp.route("/employees")
 @admin_required
 def employee_list():
@@ -85,14 +92,50 @@ def employee_list():
     )
 
 
+@bp.route("/employees/lookup", methods=["POST"])
+@admin_required
+def employee_lookup():
+    """Handle employee ID lookup for add/edit operations."""
+    employee_id = request.form.get("employee_id", "").strip()
+    action = request.form.get("action", "")
+
+    if not employee_id:
+        flash("Please enter an Employee ID", "error")
+        return redirect(url_for("admin.employee_list"))
+
+    # Check if employee exists
+    success, message, employee = employee_controller.get_employee(employee_id)
+
+    if action == "add":
+        if success:
+            flash("Employee ID already in Use", "error")
+            return redirect(url_for("admin.employee_list"))
+        else:
+            # Redirect to add form with employee_id pre-filled
+            return redirect(url_for("admin.employee_add", employee_id=employee_id))
+    elif action == "edit":
+        if not success:
+            flash("Employee ID does not exist", "error")
+            return redirect(url_for("admin.employee_list"))
+        else:
+            # Redirect to edit form
+            return redirect(url_for("admin.employee_edit", employee_id=employee_id))
+    else:
+        flash("Invalid action", "error")
+        return redirect(url_for("admin.employee_list"))
+
+
 @bp.route("/employees/add", methods=["GET", "POST"])
 @admin_required
 def employee_add():
     """Add a new employee."""
+    # Get pre-filled employee_id from query string if provided
+    prefilled_employee_id = request.args.get("employee_id", "").strip()
+
     if request.method == "POST":
         # Collect form data
         employee_data = {
-            "employee_id": employee_controller.generate_employee_id(),
+            "employee_id": request.form.get("employee_id", "").strip() or employee_controller.generate_employee_id(),
             "first_name": request.form.get("first_name", "").strip(),
             "last_name": request.form.get("last_name", "").strip(),
             "surname": request.form.get("surname", "").strip() or None,
@@ -123,9 +166,14 @@ def employee_add():
         else:
             flash(message, "error")
 
+    # Create a minimal employee object with just the ID for display
+    employee = None
+    if prefilled_employee_id:
+        employee = type('obj', (object,), {'employee_id': prefilled_employee_id})()
+
     return render_template(
         "admin/employee_form.html",
-        employee=None,
+        employee=employee,
         departments=get_departments(),
         job_titles=get_job_titles(),
         action="add",
@@ -143,6 +191,16 @@ def employee_edit(employee_id):
         return redirect(url_for("admin.employee_list"))
 
     if request.method == "POST":
+        pay_amount = float(request.form.get("pay_amount") or 0)
+        salary_type = request.form.get("salary_type", "")
+        if salary_type == "Hourly":
+            hourly_rate = pay_amount
+            base_salary = None
+        elif salary_type == "Salary":
+            base_salary = pay_amount
+            hourly_rate = None
+        else:
+            base_salary = hourly_rate = None
         # Collect updated form data
         update_data = {
             "first_name": request.form.get("first_name", "").strip(),
@@ -160,6 +218,11 @@ def employee_edit(employee_id):
             "department_name": request.form.get("department_name", ""),
             "job_title_name": request.form.get("job_title_name", ""),
             "status": request.form.get("status", "Active"),
+            "salary_type": salary_type,
+            "base_salary": base_salary,
+            "hourly_rate": hourly_rate,
+            "medical_type": request.form.get("medical_type", "Single"),
+            "num_dependents": int(request.form.get("num_dependents") or 0),
         }
 
         success, message, _ = employee_controller.update_employee(employee_id, update_data)
@@ -176,6 +239,38 @@ def employee_edit(employee_id):
         departments=get_departments(),
         job_titles=get_job_titles(),
         action="edit",
+    )
+
+
+@bp.route("/employees/<employee_id>/personal")
+@admin_required
+def employee_personal_view(employee_id):
+    """View employee personal details (read-only)."""
+    success, message, employee = employee_controller.get_employee(employee_id)
+
+    if not success:
+        flash(message, "error")
+        return redirect(url_for("admin.employee_list"))
+
+    return render_template(
+        "admin/employee_personal_view.html",
+        employee=employee,
+    )
+
+
+@bp.route("/employees/<employee_id>/pay")
+@admin_required
+def employee_pay_view(employee_id):
+    """View employee pay details (read-only)."""
+    success, message, employee = employee_controller.get_employee(employee_id)
+
+    if not success:
+        flash(message, "error")
+        return redirect(url_for("admin.employee_list"))
+
+    return render_template(
+        "admin/employee_pay_view.html",
+        employee=employee,
     )
 
 

@@ -397,7 +397,7 @@ class PayrollController:
             detail.federal_tax_employee = tax_data["federal_tax_employee"]
             detail.social_security_employee = tax_data["social_security_employee"]
             detail.medicare_employee = tax_data["medicare_employee"]
-            detail.total_employee_deductions = tax_data["total_employee_deductions"]
+            detail.total_employee_deductions = medical_deduction
             detail.total_employee_taxes = tax_data["total_employee_taxes"]
 
             detail.net_pay = net_data["net_pay"]
@@ -425,7 +425,7 @@ class PayrollController:
         start_date: str,
         end_date: str,
         active_only: bool = True,
-    ) -> tuple[bool, str, list[PayrollDetail]]:
+    ) -> tuple[bool, str, list[PayrollDetail], list[str]]:
         """
         Calculate payroll for all employees for a pay period.
 
@@ -435,7 +435,7 @@ class PayrollController:
             active_only: Only include active employees
 
         Returns:
-            Tuple of (success, message, list_of_payroll_details)
+            Tuple of (success, message, list_of_payroll_details, list_of_errors)
         """
         try:
             employees = Employee.get_all(include_terminated=not active_only)
@@ -456,11 +456,12 @@ class PayrollController:
                     True,
                     f"Calculated {len(results)} payrolls with {len(errors)} errors",
                     results,
+                    errors,
                 )
-            return True, f"Successfully calculated payroll for {len(results)} employees", results
+            return True, f"Successfully calculated payroll for {len(results)} employees", results, []
 
         except Exception as e:
-            return False, f"Error calculating payroll: {e!s}", []
+            return False, f"Error calculating payroll: {e!s}", [], []
 
     def approve_payroll(
         self,

@@ -70,6 +70,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Employee ID</th>
+                        <th>Employee Name</th>
                         <th>Regular Hrs</th>
                         <th>OT Hrs</th>
                         <th>Sat Hrs</th>
@@ -85,6 +86,7 @@
                     {% for d in details %}
                     <tr>
                         <td>{{ d.employee_id }}</td>
+                        <td>{{ d.first_name }} {{ d.last_name }}</td>
                         <td>{{ d.regular_hours }}</td>
                         <td>{{ d.overtime_hours }}</td>
                         <td>{{ d.saturday_hours }}</td>

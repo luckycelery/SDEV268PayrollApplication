@@ -35,6 +35,10 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
+    # Initialize database path for models
+    from src.models.base_model import BaseModel
+    BaseModel.set_db_path(app.config["DATABASE"])
+
     # Register blueprints
     from src.routes import admin, auth, employee, payroll
 

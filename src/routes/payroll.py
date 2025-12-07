@@ -77,7 +77,7 @@ def calculate_payroll():
     """Calculate payroll for current period."""
     start_date, end_date = payroll_controller.get_current_period()
 
-    success, message, results = payroll_controller.calculate_all_payroll(
+    success, message, results, errors = payroll_controller.calculate_all_payroll(
         start_date, end_date
     )
 
@@ -150,6 +150,7 @@ def view_paycheck_detail(payroll_detail_id):
         "employee/paycheck_detail.html",
         payroll=detail,
         period=period,
+        employee=employee,
         is_admin_view=True,
         salary_type=salary_type,
     )

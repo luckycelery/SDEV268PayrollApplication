@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Employees - ABC Payroll{% endblock %}
+{% block title %}Employee Personal Search - ABC Payroll{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col">
-        <h1><i class="bi bi-people me-2"></i>Employee List</h1>
+        <h3><i class="bi bi-people me-2"></i>Employee List</h3>
     </div>
-    <div class="col-auto">
-        <a href="{{ url_for('admin.employee_add') }}" class="btn btn-primary">
-            <i class="bi bi-person-plus me-1"></i>Add Employee
-        </a>
-    </div>
+</div>
+<div class="card mb-4">
+    <a href="{{ url_for('admin.employee_add') }}" class="list-group-item list-group-item-action">
+        <i class="bi bi-person-plus me-2"></i>Add New Employee
+    </a>
 </div>
 
 <!-- Search Form -->
@@ -42,10 +42,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Email</th>
+                        <th>Status</th>
                         <th>Department</th>
                         <th>Job Title</th>
-                        <th>Status</th>
+                        <th>Personal Details</th>
+                        <th>Pay Details</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -54,15 +55,24 @@
                     <tr>
                         <td>{{ emp.employee_id }}</td>
                         <td>{{ emp.first_name }} {{ emp.last_name }}</td>
-                        <td>{{ emp.email }}</td>
-                        <td>{{ emp.department_name }}</td>
-                        <td>{{ emp.job_title_name }}</td>
-                        <td>
-                            {% if emp.status == 'Active' %}
+                        <td>{% if emp.status == 'Active' %}
                                 <span class="badge bg-success">Active</span>
                             {% else %}
                                 <span class="badge bg-secondary">{{ emp.status }}</span>
-                            {% endif %}
+                            {% endif %}</td>
+                        <td>{{ emp.department_name }}</td>
+                        <td>{{ emp.job_title_name }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.employee_personal_view', employee_id=emp.employee_id) }}"
+                               class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.employee_pay_view', employee_id=emp.employee_id) }}"
+                               class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-eye"></i> View
+                            </a>
                         </td>
                         <td>
                             <a href="{{ url_for('admin.employee_edit', employee_id=emp.employee_id) }}"

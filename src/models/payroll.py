@@ -483,9 +483,11 @@ class PayrollDetail(BaseModel):
     def get_by_payroll(cls, payroll_id: int) -> list["PayrollDetail"]:
         """Get all payroll details for a payroll period."""
         query = """
-            SELECT * FROM payroll_details
-            WHERE payroll_id = ?
-            ORDER BY employee_id
+            SELECT pd.*, e.first_name, e.last_name
+            FROM payroll_details pd
+            LEFT JOIN employees e ON pd.employee_id = e.employee_id
+            WHERE pd.payroll_id = ?
+            ORDER BY pd.employee_id
         """
         rows = cls.execute_query(query, (payroll_id,))
         return [cls._row_to_payroll_detail(row) for row in rows]
@@ -521,12 +523,14 @@ class PayrollDetail(BaseModel):
     @classmethod
     def _row_to_payroll_detail(cls, row: sqlite3.Row) -> "PayrollDetail":
         """Convert database row to PayrollDetail object."""
-        # Get optional period info (may not be present in all queries)
+        # Get optional fields (may not be present in all queries)
         row_keys = row.keys()
         period_start = row["period_start_date"] if "period_start_date" in row_keys else None
         period_end = row["period_end_date"] if "period_end_date" in row_keys else None
+        first_name = row["first_name"] if "first_name" in row_keys else None
+        last_name = row["last_name"] if "last_name" in row_keys else None
 
-        return PayrollDetail(
+        detail = PayrollDetail(
             payroll_detail_id=row["payroll_detail_id"],
             payroll_id=row["payroll_id"],
             employee_id=row["employee_id"],
@@ -557,6 +561,14 @@ class PayrollDetail(BaseModel):
             period_start_date=period_start,
             period_end_date=period_end,
         )
+
+        # Add optional employee name fields
+        if first_name is not None:
+            detail.first_name = first_name
+        if last_name is not None:
+            detail.last_name = last_name
+
+        return detail
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""

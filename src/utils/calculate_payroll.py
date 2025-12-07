@@ -117,9 +117,15 @@ def main():
 
     # Calculate payroll for all employees
     print("\nCalculating payroll for all employees...")
-    success, message, results = controller.calculate_all_payroll(start_date, end_date)
+    success, message, results, errors = controller.calculate_all_payroll(start_date, end_date)
 
     print(f"\n{message}")
+
+    # Print errors if any (helpful for debugging)
+    if errors:
+        print("\nERRORS encountered:")
+        for error in errors:
+            print(f"  - {error}")
 
     if results:
         print_payroll_summary(results)

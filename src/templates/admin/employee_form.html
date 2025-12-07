@@ -3,21 +3,38 @@
 {% block title %}{{ 'Edit' if employee else 'Add' }} Employee - ABC Payroll{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
+<!-- <div class="row mb-0">
     <div class="col">
         <h1>
             <i class="bi bi-person-{{ 'gear' if employee else 'plus' }} me-2"></i>
             {{ 'Edit' if employee else 'Add New' }} Employee
         </h1>
     </div>
+</div> -->
+<!-- Profile Picture Display (Edit Mode Only) -->
+<div class="row mb-0 justify-content-center">
+    <div class="col-md-3 text-center">
+        <h5 class="card-subtitle mb-3 text-muted">{{employee.first_name}} {{employee.last_name}} ({{employee.employee_id}})</h5>
+        {% if employee and employee.has_picture and employee.picture_filename %}
+        <img src="{{ url_for('static', filename='images/profile_pics/' ~ employee.picture_filename) }}"
+                alt="Employee profile"
+                class="img-fluid rounded-circle mb-2"
+                style="max-width: 200px; max-height: 200px; object-fit: cover;">
+        {% else %}
+        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
+                style="width: 200px; height: 200px;">
+            <i class="bi bi-person-circle" style="font-size: 8rem; color: #ccc;"></i>
+        </div>
+        <p class="small text-muted mt-2">No picture available</p>
+        {% endif %}
+    </div>
 </div>
-
 <div class="card">
     <div class="card-body">
         <form method="POST">
             <!-- Personal Information -->
             <h5 class="border-bottom pb-2 mb-3">
-                <i class="bi bi-person me-2"></i>Personal Information
+                <i class="bi bi-person me-2"></i>{{'Edit ' if employee else 'Add New'}} Employee Information
             </h5>
             <div class="row mb-3">
                 <div class="col-md-4">
@@ -141,7 +158,7 @@
             {% endif %}
 
             <!-- Compensation (only for new employees) -->
-            {% if not employee %}
+            <!-- {% if employee %} -->
             <h5 class="border-bottom pb-2 mb-3 mt-4">
                 <i class="bi bi-currency-dollar me-2"></i>Compensation
             </h5>
@@ -150,25 +167,25 @@
                     <label for="salary_type" class="form-label">Pay Type *</label>
                     <select class="form-select" id="salary_type" name="salary_type" required>
                         <option value="">Select...</option>
-                        <option value="Salary">Salary</option>
-                        <option value="Hourly">Hourly</option>
+                        <option value="Salary" {{ 'selected' if employee and employee.salary_type == 'Salary' else '' }}>Salary</option>
+                        <option value="Hourly" {{ 'selected' if employee and employee.salary_type == 'Hourly' else '' }}>Hourly</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="base_salary" class="form-label">Annual Salary</label>
-                    <input type="number" class="form-control" id="base_salary" name="base_salary"
-                           step="0.01" placeholder="For salaried employees">
-                </div>
-                <div class="col-md-3">
-                    <label for="hourly_rate" class="form-label">Hourly Rate</label>
-                    <input type="number" class="form-control" id="hourly_rate" name="hourly_rate"
-                           step="0.01" placeholder="For hourly employees">
+                    <label for="pay_amount" class="form-label">Hourly/Annual Pay *</label>
+                    <input type="number" class="form-control" id="pay_amount" name="pay_amount"
+                        step="0.01"
+                        placeholder="Enter hourly or annual pay"
+                        value="{% if employee %}{{ employee.hourly_rate if employee.salary_type == 'Hourly' else employee.base_salary }}{% else %}{% endif %}">
+                    <div class="form-text">
+                        Hourly rate or annual salary.
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <label for="medical_type" class="form-label">Medical Coverage *</label>
                     <select class="form-select" id="medical_type" name="medical_type" required>
-                        <option value="Single">Single ($50/week)</option>
-                        <option value="Family">Family ($100/week)</option>
+                        <option value="Single" {{ 'selected' if employee and employee.medical_type == 'Single' else '' }}>Single ($50/week)</option>
+                        <option value="Family" {{ 'selected' if employee and employee.medical_type == 'Family' else '' }}>Family ($100/week)</option>
                     </select>
                 </div>
             </div>
@@ -176,10 +193,10 @@
                 <div class="col-md-3">
                     <label for="num_dependents" class="form-label">Number of Dependents</label>
                     <input type="number" class="form-control" id="num_dependents" name="num_dependents"
-                           value="0" min="0">
+                           min="0" {{ 'value=' ~ employee.num_dependents if employee else '0' }}>
                 </div>
             </div>
-            {% endif %}
+            <!-- {% endif %} -->
 
             <!-- Buttons -->
             <div class="mt-4">

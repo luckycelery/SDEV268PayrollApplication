@@ -305,7 +305,7 @@ SELECT
 FROM employees e
 JOIN departments d ON e.department_name = d.department_name
 JOIN job_titles j ON e.job_title_name = j.title_name
-JOIN compensation c ON e.employee_id = c.employee_id
+LEFT JOIN compensation c ON e.employee_id = c.employee_id
 LEFT JOIN pto_balances p ON e.employee_id = p.employee_id;
 
 -- View: Weekly time entry summary per employee

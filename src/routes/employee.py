@@ -148,5 +148,6 @@ def paycheck_detail(payroll_detail_id):
         "employee/paycheck_detail.html",
         payroll=detail,
         period=period,
+        employee=employee,
         salary_type=salary_type,
     )

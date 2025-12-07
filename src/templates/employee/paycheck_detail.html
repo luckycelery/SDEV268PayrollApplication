@@ -14,157 +14,204 @@
                 <li class="breadcrumb-item"><a href="{{ url_for('employee.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{ url_for('employee.payroll_history') }}">Payroll History</a></li>
                 {% endif %}
-                <li class="breadcrumb-item active">Details</li>
+                <li class="breadcrumb-item active">Paycheck Details</li>
             </ol>
         </nav>
-        <h1><i class="bi bi-receipt me-2"></i>Paycheck Details</h1>
+        <h2><i class="bi bi-receipt me-2"></i>Paycheck Details</h2>
         <p class="text-muted">
             Pay Period: {{ period.period_start_date if period else 'N/A' }} to {{ period.period_end_date if period else 'N/A' }}
         </p>
     </div>
 </div>
 
-<div class="row">
-    {% if salary_type != 'Salary' %}
-    <!-- Hours Breakdown -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-                <i class="bi bi-clock me-2"></i>Hours Breakdown
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <tbody>
-                        <tr>
-                            <td>Regular Hours</td>
-                            <td class="text-end">{{ "%.2f"|format(payroll.regular_hours) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Overtime Hours</td>
-                            <td class="text-end">{{ "%.2f"|format(payroll.overtime_hours) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Saturday Hours</td>
-                            <td class="text-end">{{ "%.2f"|format(payroll.saturday_hours) }}</td>
-                        </tr>
-                        <tr>
-                            <td>PTO Hours</td>
-                            <td class="text-end">{{ "%.2f"|format(payroll.pto_hours) }}</td>
-                        </tr>
-                        <tr class="table-secondary fw-bold">
-                            <td>Total Hours</td>
-                            <td class="text-end">{{ "%.2f"|format(payroll.total_hours) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+<!-- Employee Info & Net Pay -->
+<div class="row mb-4">
+    <div class="col-md-3 text-center">
+        {% if employee and employee.has_picture and employee.picture_filename %}
+        <img src="{{ url_for('static', filename='images/profile_pics/' ~ employee.picture_filename) }}"
+             alt="Employee profile"
+             class="img-fluid rounded-circle mb-3"
+             style="max-width: 200px; max-height: 200px; object-fit: cover;">
+        {% else %}
+        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+             style="width: 200px; height: 200px;">
+            <i class="bi bi-person-circle" style="font-size: 8rem; color: #ccc;"></i>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
+        <h5>{{ employee.first_name }} {{ employee.last_name }}</h5>
+        <p class="text-muted mb-3">{{ employee.employee_id }}</p>
 
-    <!-- Earnings -->
-    <div class="col-md-{{ '12' if salary_type == 'Salary' else '6' }} mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-success text-white">
-                <i class="bi bi-cash me-2"></i>Earnings
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
+        <!-- Pay Calculation Breakdown -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
                     <tbody>
                         <tr>
-                            <td>Base Pay</td>
-                            <td class="text-end">${{ "%.2f"|format(payroll.base_pay) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Dependent Stipend</td>
-                            <td class="text-end">${{ "%.2f"|format(payroll.dependent_stipend) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Overtime Pay</td>
-                            <td class="text-end">${{ "%.2f"|format(payroll.overtime_pay) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Saturday Pay</td>
-                            <td class="text-end">${{ "%.2f"|format(payroll.saturday_pay) }}</td>
-                        </tr>
-                        <tr class="table-success fw-bold">
-                            <td>Gross Pay</td>
+                            <td class="text-start">Gross Pay:</td>
                             <td class="text-end">${{ "%.2f"|format(payroll.gross_pay) }}</td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Deductions -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-warning text-dark">
-                <i class="bi bi-dash-circle me-2"></i>Deductions
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <tbody>
                         <tr>
-                            <td>Medical Deduction</td>
-                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.medical_deduction) }}</td>
+                            <td class="text-start">Deductions:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.total_employee_deductions) }}</td>
                         </tr>
-                        <tr class="table-danger fw-bold">
-                            <td>Total Deductions</td>
-                            <td class="text-end">-${{ "%.2f"|format(payroll.total_employee_deductions) }}</td>
+                        <tr>
+                            <td class="text-start">Taxes:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.total_employee_taxes) }}</td>
+                        </tr>
+                        <tr class="border-top border-2">
+                            <td class="text-start fw-bold">Net Pay:</td>
+                            <td class="text-end fw-bold text-success">${{ "%.2f"|format(payroll.net_pay) }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- Taxes -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-danger text-white">
-                <i class="bi bi-percent me-2"></i>Taxes Withheld
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <tbody>
-                        <tr>
-                            <td>State Tax</td>
-                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.state_tax) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Federal Tax</td>
-                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.federal_tax_employee) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Social Security</td>
-                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.social_security_employee) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Medicare</td>
-                            <td class="text-end text-danger">-${{ "%.2f"|format(payroll.medicare_employee) }}</td>
-                        </tr>
-                        <tr class="table-danger fw-bold">
-                            <td>Total Taxes</td>
-                            <td class="text-end">-${{ "%.2f"|format(payroll.total_employee_taxes) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Net Pay Summary -->
+        <div class="card border-success">
+            <div class="card-body text-center py-3">
+                <p class="text-muted mb-1 small">Net Pay</p>
+                <h2 class="text-success fw-bold mb-0">${{ "%.2f"|format(payroll.net_pay) }}</h2>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Net Pay Summary -->
-<div class="row">
-    <div class="col-12">
-        <div class="card border-primary">
-            <div class="card-body text-center py-4">
-                <h4 class="text-muted mb-2">Net Pay</h4>
-                <h1 class="display-4 text-primary fw-bold">${{ "%.2f"|format(payroll.net_pay) }}</h1>
+    <div class="col-md-9">
+        <div class="row">
+            {% if salary_type != 'Salary' %}
+            <!-- Hours Breakdown -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-clock me-2"></i>Hours Breakdown
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Regular Hours:</td>
+                                    <td class="text-end">{{ "%.2f"|format(payroll.regular_hours) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Overtime Hours:</td>
+                                    <td class="text-end">{{ "%.2f"|format(payroll.overtime_hours) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Saturday Hours:</td>
+                                    <td class="text-end">{{ "%.2f"|format(payroll.saturday_hours) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">PTO Hours:</td>
+                                    <td class="text-end">{{ "%.2f"|format(payroll.pto_hours) }}</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td class="fw-bold">Total Hours:</td>
+                                    <td class="text-end fw-bold">{{ "%.2f"|format(payroll.total_hours) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Earnings -->
+            <div class="col-lg-{{ '12' if salary_type == 'Salary' else '6' }} col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-cash me-2"></i>Earnings
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Base Pay:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.base_pay) }}</td>
+                                </tr>
+                                {% if payroll.overtime_pay > 0 %}
+                                <tr>
+                                    <td class="fw-bold">Overtime Pay:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.overtime_pay) }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if payroll.saturday_pay > 0 %}
+                                <tr>
+                                    <td class="fw-bold">Saturday Pay:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.saturday_pay) }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if payroll.dependent_stipend > 0 %}
+                                <tr>
+                                    <td class="fw-bold">Dependent Stipend:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.dependent_stipend) }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr class="table-success">
+                                    <td class="fw-bold">Gross Pay:</td>
+                                    <td class="text-end fw-bold">${{ "%.2f"|format(payroll.gross_pay) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deductions -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="bi bi-dash-circle me-2"></i>Deductions
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Medical:</td>
+                                    <td class="text-end text-danger">-${{ "%.2f"|format(payroll.medical_deduction) }}</td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td class="fw-bold">Total Deductions:</td>
+                                    <td class="text-end fw-bold text-danger">-${{ "%.2f"|format(payroll.total_employee_deductions) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taxes -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <i class="bi bi-percent me-2"></i>Taxes Withheld
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Federal Tax:</td>
+                                    <td class="text-end text-danger">-${{ "%.2f"|format(payroll.federal_tax_employee) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">State Tax:</td>
+                                    <td class="text-end text-danger">-${{ "%.2f"|format(payroll.state_tax) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Social Security:</td>
+                                    <td class="text-end text-danger">-${{ "%.2f"|format(payroll.social_security_employee) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Medicare:</td>
+                                    <td class="text-end text-danger">-${{ "%.2f"|format(payroll.medicare_employee) }}</td>
+                                </tr>
+                                <tr class="table-danger">
+                                    <td class="fw-bold">Total Taxes:</td>
+                                    <td class="text-end fw-bold text-danger">-${{ "%.2f"|format(payroll.total_employee_taxes) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

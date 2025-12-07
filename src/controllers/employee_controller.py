@@ -411,6 +411,7 @@ class EmployeeController:
                 first_name=employee_data.get("first_name", ""),
                 last_name=employee_data.get("last_name", ""),
                 surname=employee_data.get("surname"),
+                phone_num=employee_data.get("phone_num"),
                 date_of_birth=employee_data.get("date_of_birth", ""),
                 gender=employee_data.get("gender", ""),
                 email=employee_data.get("email", ""),
