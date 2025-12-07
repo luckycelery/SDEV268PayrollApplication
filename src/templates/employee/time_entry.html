@@ -9,27 +9,49 @@
         <p class="text-muted">Current Pay Period: {{ start_date }} to {{ end_date }}</p>
     </div>
 </div>
-
+<!-- Employee Photo -->
+<div class="text-center mb-3">
+    {% if employee.has_picture and employee.picture_filename %}
+    <img src="{{ url_for('static', filename='images/profile_pics/' ~ employee.picture_filename) }}"
+            alt="Employee profile"
+            class="img-fluid rounded-circle"
+            style="width: 100%; max-width: 150px; aspect-ratio: 1/1; object-fit: cover;">
+    {% else %}
+    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto"
+            style="width: 100%; max-width: 150px; aspect-ratio: 1/1;">
+        <i class="bi bi-person-circle" style="font-size: 6rem; color: #ccc;"></i>
+    </div>
+    {% endif %}
+    <h5 class="mt-2 mb-0">{{ employee.first_name }} {{ employee.last_name }}</h5>
+    <p class="text-muted small">{{ employee.employee_id }}</p>
+</div>
 <div class="row">
     <!-- Entry Form -->
-    <div class="col-md-5">
+    <div class="col-lg-4 col-12 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Time Entry</h5>
             </div>
             <div class="card-body">
+                {% if salary_type == 'Salary' %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i><strong>Salaried Employee:</strong> Automatic 8 hours Monday-Friday. Enter PTO only.
+                </div>
+                {% endif %}
                 <form method="POST">
                     <div class="mb-3">
                         <label for="entry_date" class="form-label">Date *</label>
                         <input type="date" class="form-control" id="entry_date" name="entry_date"
                                min="{{ start_date }}" max="{{ end_date }}" required>
                     </div>
+                    {% if salary_type != 'Salary' %}
                     <div class="mb-3">
                         <label for="hours_worked" class="form-label">Hours Worked</label>
                         <input type="number" class="form-control" id="hours_worked" name="hours_worked"
                                step="0.5" min="0" max="24" value="0">
-                        <div class="form-text">Over 8 hours = overtime (1.5x)</div>
+                        <div class="form-text">Over 8 hours/day = overtime (1.5x). All Saturday hours = 1.5x</div>
                     </div>
+                    {% endif %}
                     <div class="mb-3">
                         <label for="pto_hours" class="form-label">PTO Hours</label>
                         <input type="number" class="form-control" id="pto_hours" name="pto_hours"
@@ -49,8 +71,8 @@
     </div>
 
     <!-- Current Entries -->
-    <div class="col-md-7">
-        <div class="card">
+    <div class="col-lg-4 col-12 mb-4">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-list me-2"></i>This Week's Entries</h5>
             </div>
@@ -62,7 +84,9 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Day</th>
-                                <th>Hours</th>
+                                <th>Regular</th>
+                                <th>OT</th>
+                                <th>Sat</th>
                                 <th>PTO</th>
                                 <th>Total</th>
                             </tr>
@@ -71,9 +95,11 @@
                             {% for entry in entries %}
                             <tr>
                                 <td>{{ entry.entry_date }}</td>
-                                <td>{{ entry.day_of_week }}</td>
-                                <td>{{ entry.hours_worked }}</td>
-                                <td>{{ entry.pto_hours }}</td>
+                                <td>{{ entry.day_of_week[:3] }}</td>
+                                <td>{{ entry.regular_hours if not entry.is_saturday and entry.regular_hours else '-' }}</td>
+                                <td>{{ entry.overtime_hours if not entry.is_saturday and entry.overtime_hours else '-' }}</td>
+                                <td>{{ entry.hours_worked if entry.is_saturday and entry.hours_worked else '-' }}</td>
+                                <td>{{ entry.pto_hours if entry.pto_hours else '-' }}</td>
                                 <td>{{ entry.total_hours }}</td>
                             </tr>
                             {% endfor %}
@@ -81,7 +107,9 @@
                         <tfoot class="table-light">
                             <tr>
                                 <th colspan="2">Weekly Total</th>
-                                <th>{{ entries | sum(attribute='hours_worked') }}</th>
+                                <th>{{ entries | map(attribute='regular_hours') | select | sum }}</th>
+                                <th>{{ entries | map(attribute='overtime_hours') | select | sum }}</th>
+                                <th>{{ entries | selectattr('is_saturday') | sum(attribute='hours_worked') }}</th>
                                 <th>{{ entries | sum(attribute='pto_hours') }}</th>
                                 <th>{{ entries | sum(attribute='total_hours') }}</th>
                             </tr>
@@ -93,6 +121,207 @@
                 {% endif %}
             </div>
         </div>
+    </div>
+
+    <!-- Pay Preview -->
+    <div class="col-lg-4 col-12 mb-4">
+        {% if pay_preview and employee %}
+
+        {% if salary_type != 'Salary' %}
+        <!-- Hours Breakdown -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-clock me-2"></i>Hours <span class="badge bg-light text-dark">${{ "%.2f"|format(employee.hourly_rate) }}/hr</span>
+            </div>
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td>Regular:</td>
+                            <td class="text-end">{{ "%.1f"|format(pay_preview.regular_hours) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Overtime (1.5x):</td>
+                            <td class="text-end">{{ "%.1f"|format(pay_preview.overtime_hours) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Saturday (1.5x):</td>
+                            <td class="text-end">{{ "%.1f"|format(pay_preview.saturday_hours) }}</td>
+                        </tr>
+                        <tr>
+                            <td>PTO:</td>
+                            <td class="text-end">{{ "%.1f"|format(pay_preview.pto_hours) }}</td>
+                        </tr>
+                        <tr class="fw-bold border-top">
+                            <td>Total:</td>
+                            <td class="text-end">{{ "%.1f"|format(pay_preview.total_hours) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Earnings -->
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-cash me-2"></i>Earnings
+            </div>
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td>Base Pay:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.base_pay) }}</td>
+                        </tr>
+                        {% if pay_preview.overtime_pay > 0 %}
+                        <tr>
+                            <td>Overtime:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.overtime_pay) }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if pay_preview.saturday_pay > 0 %}
+                        <tr>
+                            <td>Saturday:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.saturday_pay) }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if pay_preview.dependent_stipend > 0 %}
+                        <tr>
+                            <td>Dependent Stipend:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.dependent_stipend) }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fw-bold border-top">
+                            <td>Gross Pay:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.gross_pay) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Employee Deductions -->
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-dash-circle me-2"></i>Deductions
+            </div>
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td>Medical:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.medical_deduction) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Employee Taxes -->
+        <div class="card mb-3">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-percent me-2"></i>Employee Taxes
+            </div>
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td>Federal:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.federal_tax_employee) }}</td>
+                        </tr>
+                        <tr>
+                            <td>State (IN):</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.state_tax) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Social Security:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.social_security_employee) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Medicare:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.medicare_employee) }}</td>
+                        </tr>
+                        <tr class="fw-bold border-top">
+                            <td>Total Taxes:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.total_employee_taxes) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pay Calculation Breakdown -->
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-calculator me-2"></i>Estimated Pay <span class="badge bg-light text-dark">PREVIEW</span>
+            </div>
+            <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-start">Gross Pay:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.gross_pay) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Deductions:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.total_employee_deductions) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Taxes:</td>
+                            <td class="text-end text-danger">-${{ "%.2f"|format(pay_preview.total_employee_taxes) }}</td>
+                        </tr>
+                        <tr class="border-top border-2">
+                            <td class="text-start fw-bold">Net Pay:</td>
+                            <td class="text-end fw-bold text-success">${{ "%.2f"|format(pay_preview.net_pay) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Employer Taxes (Informational) -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-building me-2"></i>Employer Contributions <span class="badge bg-light text-dark">INFO</span>
+            </div>
+            <div class="card-body py-2">
+                <p class="small text-muted mb-2">These amounts are paid by your employer and do not affect your paycheck.</p>
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td>Federal:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.federal_tax_employer) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Social Security:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.social_security_employer) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Medicare:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.medicare_employer) }}</td>
+                        </tr>
+                        <tr class="fw-bold border-top">
+                            <td>Total Employer:</td>
+                            <td class="text-end">${{ "%.2f"|format(pay_preview.total_employer_taxes) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No Employee Data -->
+        <div class="card border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <i class="bi bi-calculator me-2"></i>Pay Preview
+            </div>
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
+                <p class="text-muted mt-3 mb-0">Unable to load pay preview</p>
+                <p class="text-muted small">Please refresh the page</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

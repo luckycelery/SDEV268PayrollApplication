@@ -59,12 +59,15 @@ def time_entry():
     # Get current pay period
     start_date, end_date = payroll_controller.get_current_period()
 
-    # Get employee for PTO balance
+    # Get employee for PTO balance and salary type
     pto_balance = 0.0
+    employee = None
+    salary_type = None
     if employee_id:
         success, message, employee = employee_controller.get_employee(employee_id)
         if success and employee:
             pto_balance = employee.pto_balance
+            salary_type = employee.salary_type
 
     if request.method == "POST":
         entry_date = request.form.get("entry_date", "")
@@ -95,8 +98,14 @@ def time_entry():
 
     # Get existing entries for current period
     entries = []
+    pay_preview = None
     if employee_id:
         success, message, entries = payroll_controller.get_time_entries(
+            employee_id, start_date, end_date
+        )
+
+        # Always calculate pay preview (even with no entries, will show $0)
+        success, message, pay_preview = payroll_controller.calculate_weekly_pay(
             employee_id, start_date, end_date
         )
 
@@ -106,6 +115,9 @@ def time_entry():
         start_date=start_date,
         end_date=end_date,
         pto_balance=pto_balance,
+        employee=employee,
+        salary_type=salary_type,
+        pay_preview=pay_preview,
     )
 
 

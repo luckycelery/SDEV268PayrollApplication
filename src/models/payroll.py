@@ -651,7 +651,7 @@ class PayrollCalculator:
         saturday_hours = 0.0
         pto_hours = 0.0
 
-        # Sum up hours from all entries
+        # Sum up hours from all entries using daily overtime calculation
         for entry in time_entries:
             pto_hours += entry.pto_hours
 
@@ -659,13 +659,9 @@ class PayrollCalculator:
                 # All Saturday hours are at 1.5x
                 saturday_hours += entry.hours_worked
             else:
-                regular_hours += entry.hours_worked
-
-        # Calculate overtime (hours over 40 in a week, excluding Saturday)
-        total_regular = regular_hours + pto_hours
-        if total_regular > STANDARD_WORK_HOURS_PER_WEEK:
-            overtime_hours = total_regular - STANDARD_WORK_HOURS_PER_WEEK
-            regular_hours = STANDARD_WORK_HOURS_PER_WEEK - pto_hours
+                # Use entry's daily overtime calculation (over 8 hours/day)
+                regular_hours += entry.regular_hours  # Up to 8 hours
+                overtime_hours += entry.overtime_hours  # Hours over 8
 
         total_hours = regular_hours + overtime_hours + saturday_hours + pto_hours
 
