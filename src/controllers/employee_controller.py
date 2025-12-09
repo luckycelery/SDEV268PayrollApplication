@@ -4,6 +4,7 @@ Coordinates between UI and Employee model
 Matches the updated Employee model based on database schema
 """
 
+from database.auth import create_user_account_for_employee
 from src.models.employee import Employee
 from src.utils.constants import (
     EMPLOYEE_STATUS_ACTIVE,
@@ -82,7 +83,20 @@ class EmployeeController:
             # Save to database
             employee.save()
 
-            return True, f"Employee {employee.first_name} {employee.last_name} created successfully", employee
+            # Automatically create user account
+            user_created = create_user_account_for_employee(
+                employee.employee_id, employee.email, employee.date_of_birth
+            )
+
+            if not user_created:
+                return (
+                    True,
+                    f"Employee {employee.first_name} {employee.last_name} created successfully, "
+                    "but user account creation failed. Admin can create manually.",
+                    employee,
+                )
+
+            return True, f"Employee {employee.first_name} {employee.last_name} created successfully with user account", employee
 
         except Exception as e:
             return False, f"Error creating employee: {e!s}", None

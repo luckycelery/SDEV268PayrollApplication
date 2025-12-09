@@ -6,7 +6,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from constants import DB_PATH, PROJECT_ROOT, SAMPLE_DATA_FILE, SCHEMA_FILE
+from constants import DB_PATH, LINE_LENGTH, PROJECT_ROOT, SAMPLE_DATA_FILE, SCHEMA_FILE
 
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -42,14 +42,14 @@ def main():
     schema_file = SCHEMA_FILE
     data_file = SAMPLE_DATA_FILE
 
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
     print("PAYROLL DATABASE SETUP")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
     print("\nThis script will:")
     print("  1. Create database schema")
     print("  2. Load test data (with validation)")
     print("  3. Create user accounts")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
 
     # Check if database already exists
     if db_path.exists():
@@ -61,15 +61,15 @@ def main():
         print("[OK] Deleted existing database")
 
     # Step 1: Create schema
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     print("STEP 1: CREATING DATABASE SCHEMA")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
     run_sql_file(db_path, schema_file)
 
     # Step 2: Load test data
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     print("STEP 2: LOADING TEST DATA")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
     print("Loading data with graceful error handling...")
     print("Valid records will be loaded, invalid records will be reported.\n")
 
@@ -77,16 +77,16 @@ def main():
     report.print_summary()
 
     # Step 3: Create user accounts
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     print("STEP 3: CREATING USER ACCOUNTS")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
 
     setup_all_users(str(db_path))
 
     # Final summary
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     print("SETUP COMPLETE!")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
 
     # Verify database
     conn = sqlite3.connect(str(db_path))

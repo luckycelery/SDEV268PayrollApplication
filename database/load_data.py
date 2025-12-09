@@ -7,6 +7,8 @@ import json
 import sqlite3
 from datetime import datetime
 
+from src.utils.constants import LINE_LENGTH
+
 
 class ValidationError(Exception):
     """Custom exception for validation errors"""
@@ -34,9 +36,9 @@ class DataLoadReport:
 
     def print_summary(self):
         """Print comprehensive loading summary"""
-        print("\n" + "=" * 70)
+        print("\n" + "=" * LINE_LENGTH)
         print("DATABASE LOADING SUMMARY")
-        print("=" * 70)
+        print("=" * LINE_LENGTH)
 
         # Departments
         print(f"\nDepartments: {self.departments_loaded} loaded")
@@ -67,7 +69,7 @@ class DataLoadReport:
                 print(f"    - {emp_id}: {error}")
 
         # Overall status
-        print("\n" + "=" * 70)
+        print("\n" + "=" * LINE_LENGTH)
         total_failed = (len(self.departments_failed) +
                        len(self.job_titles_failed) +
                        len(self.employees_failed) +
@@ -77,7 +79,7 @@ class DataLoadReport:
             print(f"WARNING: {total_failed} total validation error(s) found!")
         else:
             print("SUCCESS: All records loaded without errors!")
-        print("=" * 70 + "\n")
+        print("=" * LINE_LENGTH + "\n")
 
 
 def validate_employee_age(dob_str: str, employee_name: str) -> None:

@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "flask>=3.1.2",
+    "pynacl>=1.6.1",
 ]
 
 [tool.uv]
@@ -16,7 +17,6 @@ dev = [
     "ruff>=0.8.0",
 ]
 enhanced = [
-    "bcrypt>=4.1.2",  # For secure password hashing (future enhancement)
     "Pillow>=10.1.0",  # For employee pictures
 ]
 test = [

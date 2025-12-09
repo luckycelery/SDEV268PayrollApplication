@@ -87,10 +87,11 @@ CREATE TABLE compensation (
 -- =============================================================================
 
 -- HR0001 for admin, email prefix for employees
--- SHA256 hash (upgrade to bcrypt later)
+-- Argon2id hash via PyNaCl (modular crypt format)
 -- employee_id NULL for Admin users
 -- is_active for soft delete
 -- last_login is ISO timestamp of last login
+-- failed_login_attempts and locked_until for future account lockout feature
 CREATE TABLE users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
@@ -98,6 +99,8 @@ CREATE TABLE users (
     user_type TEXT NOT NULL CHECK(user_type IN ('Admin', 'Employee')),
     employee_id TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
+    failed_login_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT,
     last_login TEXT,
     created_date TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)

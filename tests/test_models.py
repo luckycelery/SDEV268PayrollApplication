@@ -9,10 +9,10 @@ from src.models.employee import Employee
 
 def print_separator(title=""):
     """Print a section separator"""
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     if title:
         print(f" {title}")
-        print("=" * 70)
+        print("=" * LINE_LENGTH)
 
 
 def test_employee_retrieval():
@@ -165,12 +165,12 @@ def test_department_listing():
 
 def run_all_tests():
     """Run all tests"""
-    print("\n" + "=" * 70)
+    print("\n" + "=" * LINE_LENGTH)
     print(" EMPLOYEE MODEL & CONTROLLER TEST SUITE")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
     print(" Database: payroll.db")
     print(" Testing: CRUD operations, validation, search, controller")
-    print("=" * 70)
+    print("=" * LINE_LENGTH)
 
     try:
         test_employee_retrieval()

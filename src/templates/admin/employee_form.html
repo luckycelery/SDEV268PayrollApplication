@@ -157,8 +157,7 @@
             </div>
             {% endif %}
 
-            <!-- Compensation (only for new employees) -->
-            <!-- {% if employee %} -->
+            <!-- Compensation -->
             <h5 class="border-bottom pb-2 mb-3 mt-4">
                 <i class="bi bi-currency-dollar me-2"></i>Compensation
             </h5>
@@ -193,10 +192,9 @@
                 <div class="col-md-3">
                     <label for="num_dependents" class="form-label">Number of Dependents</label>
                     <input type="number" class="form-control" id="num_dependents" name="num_dependents"
-                           min="0" {{ 'value=' ~ employee.num_dependents if employee else '0' }}>
+                           min="0" value="{{ employee.num_dependents if employee else 0 }}">
                 </div>
             </div>
-            <!-- {% endif %} -->
 
             <!-- Buttons -->
             <div class="mt-4">

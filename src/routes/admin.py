@@ -133,6 +133,20 @@ def employee_add():
     prefilled_employee_id = request.args.get("employee_id", "").strip()
 
     if request.method == "POST":
+        # Convert pay_amount to appropriate salary field based on type
+        pay_amount = float(request.form.get("pay_amount") or 0)
+        salary_type = request.form.get("salary_type", "")
+        
+        if salary_type == "Hourly":
+            hourly_rate = pay_amount if pay_amount > 0 else None
+            base_salary = None
+        elif salary_type == "Salary":
+            base_salary = pay_amount if pay_amount > 0 else None
+            hourly_rate = None
+        else:
+            hourly_rate = None
+            base_salary = None
+
         # Collect form data
         employee_data = {
             "employee_id": request.form.get("employee_id", "").strip() or employee_controller.generate_employee_id(),
@@ -151,9 +165,9 @@ def employee_add():
             "date_hired": request.form.get("date_hired", ""),
             "department_name": request.form.get("department_name", ""),
             "job_title_name": request.form.get("job_title_name", ""),
-            "salary_type": request.form.get("salary_type", ""),
-            "base_salary": float(request.form.get("base_salary") or 0) or None,
-            "hourly_rate": float(request.form.get("hourly_rate") or 0) or None,
+            "salary_type": salary_type,
+            "base_salary": base_salary,
+            "hourly_rate": hourly_rate,
             "medical_type": request.form.get("medical_type", "Single"),
             "num_dependents": int(request.form.get("num_dependents") or 0),
         }
