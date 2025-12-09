@@ -46,7 +46,8 @@ This creates the database, schema, sample employees, and user accounts automatic
 
 - Admin: `HR0001` / `AbccoTeam3`
 - Employees: `<email>` / `<email_prefix><MMDDYYYY>`
-  - Example: `roy.mustang@abccompany.com` / `roy.mustang11062005`
+  - Example (Salary): `roy.mustang@abccompany.com` / `roy.mustang11062005`
+  - Example (Hourly): `juni.ito@abccompany.com` / `junji.ito02041994`
 
 ### Running the Application
 
