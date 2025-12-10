@@ -12,8 +12,6 @@ from datetime import datetime
 import nacl.exceptions
 import nacl.pwhash
 
-from src.utils.constants import LINE_LENGTH
-
 
 def generate_employee_username(email: str) -> str:
     """
@@ -70,8 +68,8 @@ def hash_password(password: str) -> str:
         - Automatic salt generation (no collision risk)
         - OPSLIMIT_INTERACTIVE: ~100-200ms hashing time
     """
-    print("=" * LINE_LENGTH)
-    print(f"Password to hash: {password}")
+    # print("=" * LINE_LENGTH)
+    # print(f"Password to hash: {password}")
     password_bytes = password.encode("utf-8")
     hashed = nacl.pwhash.str(
         password_bytes,
@@ -79,7 +77,7 @@ def hash_password(password: str) -> str:
         memlimit=nacl.pwhash.argon2id.MEMLIMIT_INTERACTIVE,
     )
     decoded = hashed.decode("utf-8")
-    print(f"Password hash using Argon2id: {decoded}")
+    # print(f"Password hash using Argon2id: {decoded}")
     return decoded
 
 
