@@ -104,8 +104,8 @@ def main():
         end_date = sys.argv[2]
     else:
         # Default to first week of November 2025
-        start_date = "2025-11-10"
-        end_date = "2025-11-16"
+        start_date = "2025-11-24"
+        end_date = "2025-11-30"
 
     print("=" * 60)
     print("Payroll Calculation")

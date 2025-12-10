@@ -6,9 +6,9 @@ __pycache__/
 # workspace settings
 *.code-workspace
 
-# database
-payroll.db
-*.db
+# database - leaving db in for now, but would remove for production environment
+#payroll.db
+#*.db
 
 # Future implementation files (work in progress)
 future-implementation/
@@ -221,7 +221,7 @@ cython_debug/
 # Marimo
 marimo/_static/
 marimo/_lsp/
-__marimo__/ 
+__marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
