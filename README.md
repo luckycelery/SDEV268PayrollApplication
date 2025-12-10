@@ -54,7 +54,7 @@ This creates the database, schema, sample employees, and user accounts automatic
 Start the Flask web server:
 
 ```bash
-uv run flask run
+python -m flask run
 ```
 
 Or:
