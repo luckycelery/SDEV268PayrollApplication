@@ -152,9 +152,9 @@ SDEV268PayrollApplication/
 │   ├── database-setup.md          # Database setup and reference
 │   ├── project-plan.md            # Development plan
 │   ├── uml-diagrams/              # UML diagrams for actors and classes
-│   ├── user-guide.md              # User documentation
+│   ├── user-doc.md                # User documentation
 │   ├── security.md                # Security protocols
-│   └── weekly-tasks.md            # 8-week development breakdown
+│   └── 
 │
 ├── testing/                       # Testing logs and screenshots
 │   ├── initial-testing-log.md     # Pre-testing checklist
