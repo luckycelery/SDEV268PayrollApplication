@@ -44,7 +44,7 @@
 | **Expected Medicare (1.45%)**  | $42.77 | 
 | **Expected Taxes Owed**        | $544.27 |
 | **Expected Net Pay**           | $2,405.73 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC001b.png |
 | **Status**                     | Pass |
 
@@ -71,7 +71,7 @@
 | **Expected Medicare (1.45%)**  | $71.78 |
 | **Expected Taxes Owed**        | $913.27 |
 | **Expected Net Pay**           | $4,036.73 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC002b.png |
 | **Status**                     | Pass |
 
@@ -102,7 +102,7 @@ N/A due to vaidation error in Creation testing
 | **Expected Medicare (1.45%)**  | $65.18 |
 | **Expected Taxes Owed**        | $829.33 |
 | **Expected Net Pay**           | $3,665.67 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC004b.png |
 | **Status**                     | Pass |
 
@@ -129,7 +129,7 @@ N/A due to vaidation error in Creation testing
 | **Expected Medicare (1.45%)**  | $49.16 |
 | **Expected Taxes Owed**        | $625.46 |
 | **Expected Net Pay**           | $2,764.55 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC005b.png |
 | **Status**                     | Pass |
 
@@ -160,7 +160,7 @@ N/A due to validation error in Creation testing
 | **Expected Medicare (1.45%)**  | $10.88 |
 | **Expected Taxes Owed**        | $138.38 |
 | **Expected Net Pay**           | $611.63 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC007b.png |
 | **Status**                     | Pass |
 
@@ -187,7 +187,7 @@ N/A due to validation error in Creation testing
 | **Expected Medicare (1.45%)**  | $27.26 |
 | **Expected Taxes Owed**        | $346.86 |
 | **Expected Net Pay**           | $1,533.14 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC008.png |
 | **Status**                     | Pass |
 
@@ -214,7 +214,7 @@ N/A due to validation error in Creation testing
 | **Expected Medicare (1.45%)**  | $17.33 |
 | **Expected Taxes Owed**        | $220.48 |
 | **Expected Net Pay**           | $974.52 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC009b.png |
 | **Status**                     | Pass |
 
@@ -241,7 +241,7 @@ N/A due to validation error in Creation testing
 | **Expected Medicare (1.45%)**  | $20.45 |
 | **Expected Taxes Owed**        | $260.14 |
 | **Expected Net Pay**           | $1149.86 |
-| **Actual Result**              | Values Display as Explected |
+| **Actual Result**              | Values Display as Expected |
 | **Screenshot**                 | TC010b.png |
 | **Status**                     | Pass |
 
