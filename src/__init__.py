@@ -40,12 +40,13 @@ def create_app(config=None):
     BaseModel.set_db_path(app.config["DATABASE"])
 
     # Register blueprints
-    from src.routes import admin, auth, employee, payroll
+    from src.routes import admin, auth, employee, payroll, admin_time_entry
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp, url_prefix="/admin")
     app.register_blueprint(employee.bp, url_prefix="/employee")
     app.register_blueprint(payroll.bp, url_prefix="/payroll")
+    app.register_blueprint(admin_time_entry.bp, url_prefix="/admin/time-entry")
 
     # Add a simple index route that redirects to login
     @app.route("/")

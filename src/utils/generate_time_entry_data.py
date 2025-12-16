@@ -6,7 +6,7 @@ hourly_employees = ['E007', 'E008', 'E009', 'E010', 'E013']
 
 # Date range: Sept 29 - Nov 30, 2025
 start_date = datetime(2025, 9, 29)
-end_date = datetime(2025, 11, 30)
+end_date = datetime(2025, 12, 14)
 
 entries = []
 entries.append(['employee_id', 'work_date', 'hours_worked', 'pto_hours'])

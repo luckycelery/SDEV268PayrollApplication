@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Time Entry Management - All Unlocked Periods</h2>
+<p class="text-muted">View and manage time entries for all employees across all unlocked pay periods.</p>
+
+{% if not period_data %}
+  <div class="alert alert-info">No unlocked pay periods found.</div>
+{% else %}
+  {% for period_item in period_data %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+          <i class="bi bi-calendar-week me-2"></i>
+          Week of {{ period_item.period.period_start_date }} to {{ period_item.period.period_end_date }}
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>PTO Used</th>
+              <th>Total Hours</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp_data in period_item.employee_hours %}
+            <tr>
+              <td>{{ emp_data.employee.employee_id }}</td>
+              <td>{{ emp_data.employee.first_name }} {{ emp_data.employee.last_name }}</td>
+              <td>{{ "%.2f"|format(emp_data.pto_used) }} hrs</td>
+              <td>{{ "%.2f"|format(emp_data.total_hours) }} hrs</td>
+              <td>
+                <a href="{{ url_for('admin_time_entry.time_entry_detail',
+                                   employee_id=emp_data.employee.employee_id,
+                                   start_date=period_item.period.period_start_date,
+                                   end_date=period_item.period.period_end_date) }}"
+                   class="btn btn-sm btn-primary">
+                  <i class="bi bi-pencil-square me-1"></i>Manage
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

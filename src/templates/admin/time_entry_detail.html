@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin_time_entry.time_entry_overview') }}" class="btn btn-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Back to Overview
+  </a>
+</div>
+
+<h2>Time Entry Details</h2>
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">
+      {{ employee.first_name }} {{ employee.last_name }} ({{ employee.employee_id }})
+    </h5>
+    <p class="card-text">
+      <strong>Period:</strong> {{ start_date }} to {{ end_date }}
+      {% if period and period.is_locked_bool %}
+        <span class="badge bg-danger ms-2">Locked</span>
+      {% else %}
+        <span class="badge bg-success ms-2">Unlocked</span>
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<h4>Daily Time Entries</h4>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Day</th>
+      <th>Hours Worked</th>
+      <th>PTO Hours</th>
+      <th>Notes</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <form method="post">
+        <td>{{ entry.entry_date }}</td>
+        <td>{{ entry.day_of_week }}</td>
+        <td>
+          <input type="number" name="hours_worked" value="{{ entry.hours_worked }}"
+                 min="0" max="24" step="0.01" class="form-control form-control-sm"
+                 {% if period and period.is_locked_bool %}disabled{% endif %}>
+        </td>
+        <td>
+          <input type="number" name="pto_hours" value="{{ entry.pto_hours }}"
+                 min="0" max="8" step="0.01" class="form-control form-control-sm"
+                 {% if period and period.is_locked_bool %}disabled{% endif %}>
+        </td>
+        <td>
+          <input type="text" name="notes" value="{{ entry.notes or '' }}"
+                 class="form-control form-control-sm"
+                 {% if period and period.is_locked_bool %}disabled{% endif %}>
+        </td>
+        <td>
+          <input type="hidden" name="entry_date" value="{{ entry.entry_date }}">
+          {% if not (period and period.is_locked_bool) %}
+            <button type="submit" class="btn btn-sm btn-success">
+              <i class="bi bi-save me-1"></i>Save
+            </button>
+          {% else %}
+            <span class="text-muted">Locked</span>
+          {% endif %}
+        </td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if pay_preview %}
+  <div class="card mt-4">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Pay Preview</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="list-unstyled">
+            <li><strong>Regular Hours:</strong> {{ "%.2f"|format(pay_preview.regular_hours) }}</li>
+            <li><strong>Overtime Hours:</strong> {{ "%.2f"|format(pay_preview.overtime_hours) }}</li>
+            <li><strong>Saturday Hours:</strong> {{ "%.2f"|format(pay_preview.saturday_hours) }}</li>
+            <li><strong>PTO Hours:</strong> {{ "%.2f"|format(pay_preview.pto_hours) }}</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled">
+            <li><strong>Total Hours:</strong> {{ "%.2f"|format(pay_preview.total_hours) }}</li>
+            <li><strong>Gross Pay:</strong> ${{ "%.2f"|format(pay_preview.gross_pay) }}</li>
+            <li><strong>Net Pay:</strong> ${{ "%.2f"|format(pay_preview.net_pay) }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

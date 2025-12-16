@@ -129,6 +129,7 @@ class PayrollController:
         hours_worked: float,
         pto_hours: float = 0.0,
         notes: str | None = None,
+        is_admin: bool = False,
     ) -> tuple[bool, str, TimeEntry | None]:
         """
         Submit or update a time entry for an employee.
@@ -171,6 +172,11 @@ class PayrollController:
                     return False, f"Validation failed: {', '.join(errors)}", None
 
                 if existing.save():
+                    # If admin and payroll is submitted (but not locked), recalculate payroll for this employee/period
+                    if is_admin and existing.payroll_id:
+                        period = PayrollPeriod.get_by_id(existing.payroll_id)
+                        if period and not period.is_locked:
+                            self.calculate_weekly_pay(employee_id, period.period_start_date, period.period_end_date)
                     return True, f"Time entry updated for {entry_date}", existing
                 return False, "Failed to update time entry", None
             else:

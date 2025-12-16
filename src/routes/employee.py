@@ -56,6 +56,9 @@ def dashboard():
 @login_required
 def time_entry():
     """Time entry form for employees."""
+    from datetime import datetime, timedelta
+    from src.models.time_entry import TimeEntry
+
     employee_id = session.get("employee_id")
 
     # Get current pay period
@@ -71,40 +74,78 @@ def time_entry():
             pto_balance = employee.pto_balance
             salary_type = employee.salary_type
 
+    # Check if period is locked
+    period = PayrollPeriod.get_by_dates(start_date, end_date)
+    is_locked = period.is_locked_bool if period else False
+
     if request.method == "POST":
-        entry_date = request.form.get("entry_date", "")
-        hours_worked = float(request.form.get("hours_worked") or 0)
-        pto_hours = float(request.form.get("pto_hours") or 0)
-        notes = request.form.get("notes", "").strip() or None
+        if is_locked:
+            flash("This pay period is locked and cannot be edited.", "error")
+        else:
+            entry_date = request.form.get("entry_date", "")
+            hours_worked = float(request.form.get("hours_worked") or 0)
+            pto_hours = float(request.form.get("pto_hours") or 0)
+            notes = request.form.get("notes", "").strip() or None
 
-        # Validate PTO hours against balance
-        if pto_hours > pto_balance:
-            flash(f"PTO hours ({pto_hours}) exceeds available balance ({pto_balance:.2f} hours).", "error")
-        elif employee_id:
-            success, message, entry = payroll_controller.submit_time_entry(
-                employee_id=employee_id,
-                entry_date=entry_date,
-                hours_worked=hours_worked,
-                pto_hours=pto_hours,
-                notes=notes,
-            )
+            # Validate PTO hours against balance
+            if pto_hours > pto_balance:
+                flash(f"PTO hours ({pto_hours}) exceeds available balance ({pto_balance:.2f} hours).", "error")
+            elif employee_id:
+                success, message, entry = payroll_controller.submit_time_entry(
+                    employee_id=employee_id,
+                    entry_date=entry_date,
+                    hours_worked=hours_worked,
+                    pto_hours=pto_hours,
+                    notes=notes,
+                )
 
-            if success:
-                flash(message, "success")
-                # Refresh PTO balance after successful entry
-                success, message, employee = employee_controller.get_employee(employee_id)
-                if success and employee:
-                    pto_balance = employee.pto_balance
-            else:
-                flash(message, "error")
+                if success:
+                    flash(message, "success")
+                    # Refresh PTO balance after successful entry
+                    success, message, employee = employee_controller.get_employee(employee_id)
+                    if success and employee:
+                        pto_balance = employee.pto_balance
+                else:
+                    flash(message, "error")
 
-    # Get existing entries for current period
-    entries = []
+        # Redirect to refresh the page
+        return redirect(url_for("employee.time_entry"))
+
+    # Get existing time entries for this period
+    existing_entries = []
     pay_preview = None
+    all_entries = []
+
     if employee_id:
-        success, message, entries = payroll_controller.get_time_entries(
-            employee_id, start_date, end_date
-        )
+        existing_entries = TimeEntry.get_by_employee(employee_id, start_date, end_date)
+
+        # Create a map of date -> entry for quick lookup
+        entries_by_date = {entry.entry_date: entry for entry in existing_entries}
+
+        # Generate all 7 days of the week (period should be Monday to Sunday)
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+        for day_offset in range(7):
+            current_date = start_date_obj + timedelta(days=day_offset)
+            date_str = current_date.strftime("%Y-%m-%d")
+
+            # Use existing entry if available, otherwise create empty entry
+            if date_str in entries_by_date:
+                all_entries.append(entries_by_date[date_str])
+            else:
+                # Create a new empty entry for this date
+                day_of_week = TimeEntry.get_day_of_week(date_str)
+                is_saturday = 1 if day_of_week == "Saturday" else 0
+                empty_entry = TimeEntry(
+                    employee_id=employee_id,
+                    entry_date=date_str,
+                    day_of_week=day_of_week,
+                    hours_worked=0.0,
+                    pto_hours=0.0,
+                    is_saturday=is_saturday,
+                    notes=None
+                )
+                all_entries.append(empty_entry)
 
         # Always calculate pay preview (even with no entries, will show $0)
         success, message, pay_preview = payroll_controller.calculate_weekly_pay(
@@ -113,13 +154,15 @@ def time_entry():
 
     return render_template(
         "employee/time_entry.html",
-        entries=entries,
+        entries=all_entries,
         start_date=start_date,
         end_date=end_date,
         pto_balance=pto_balance,
         employee=employee,
         salary_type=salary_type,
         pay_preview=pay_preview,
+        period=period,
+        is_locked=is_locked,
     )
 
 
