@@ -186,11 +186,29 @@ DEPENDENT_STIPEND_PER_DEPENDENT = 45.00
 
 # Tax rates (as decimals)
 STATE_TAX_RATE_IN = 0.0315           # Indiana 3.15%
-FEDERAL_TAX_RATE_EMPLOYEE = 0.0765   # 7.65%
 SOCIAL_SECURITY_RATE_EMPLOYEE = 0.062  # 6.2%
 MEDICARE_RATE_EMPLOYEE = 0.0145      # 1.45%
+FEDERAL_TAX_RATE_EMPLOYEE = 0.0765   # 7.65% (project requirement - flat rate)
 
 # Employer tax rates (for reporting)
-FEDERAL_TAX_RATE_EMPLOYER = 0.0765   # 7.65%
 SOCIAL_SECURITY_RATE_EMPLOYER = 0.062  # 6.2%
 MEDICARE_RATE_EMPLOYER = 0.0145      # 1.45%
+FEDERAL_TAX_RATE_EMPLOYER = 0.0765   # 7.65% (project requirement - flat rate)
+# Federal employer tax total with SS and Medicare is 15.3%
+
+# =============================================================================
+# PROGRESSIVE TAX BRACKETS (For Future Implementation)
+# =============================================================================
+# Federal Income Tax Brackets (2025 - Annual, Single Filer)
+# Progressive tax system - each bracket taxes only income within that range
+# NOTE: Currently using flat 7.65% rate per project requirements.
+#       These brackets are preserved for future accurate implementation.
+FEDERAL_TAX_BRACKETS_ANNUAL = [
+    (11925, 0.10),      # 10% up to $11,925
+    (48475, 0.12),      # 12% from $11,925 to $48,475
+    (103350, 0.22),     # 22% from $48,475 to $103,350
+    (197300, 0.24),     # 24% from $103,350 to $197,300
+    (250525, 0.32),     # 32% from $197,300 to $250,525
+    (375800, 0.35),     # 35% from $250,525 to $375,800
+    (float('inf'), 0.37)  # 37% above $375,800
+]

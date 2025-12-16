@@ -7,11 +7,12 @@ Handles:
 - Payroll reports
 """
 
-from flask import Blueprint, flash, redirect, render_template, session, url_for
+from flask import Blueprint, flash, redirect, render_template, send_file, session, url_for
 
 from src.controllers.payroll_controller import PayrollController
 from src.models.employee import Employee
 from src.models.payroll import PayrollDetail, PayrollPeriod
+from src.utils.pdf_generator import generate_paycheck_pdf, generate_payroll_summary_pdf
 
 bp = Blueprint("payroll", __name__)
 
@@ -153,4 +154,63 @@ def view_paycheck_detail(payroll_detail_id):
         employee=employee,
         is_admin_view=True,
         salary_type=salary_type,
+    )
+
+
+@bp.route("/detail/<int:payroll_detail_id>/pdf")
+@admin_required
+def download_paycheck_pdf(payroll_detail_id):
+    """Download individual employee paycheck as PDF."""
+    detail = PayrollDetail.get_by_id(payroll_detail_id)
+
+    if detail is None:
+        flash("Payroll detail not found.", "error")
+        return redirect(url_for("payroll.payroll_list"))
+
+    period = PayrollPeriod.get_by_id(detail.payroll_id)
+    employee = Employee.get_by_id(detail.employee_id)
+
+    # Generate PDF
+    pdf_buffer = generate_paycheck_pdf(detail, period.period_start_date, period.period_end_date)
+
+    # Create filename
+    employee_name = f"{employee.first_name}_{employee.last_name}" if employee else detail.employee_id
+    filename = f"paycheck_{detail.employee_id}_{employee_name}_{period.period_start_date}.pdf"
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/pdf",
+    )
+
+
+@bp.route("/report/<int:payroll_id>/pdf")
+@admin_required
+def download_payroll_summary_pdf(payroll_id):
+    """Download payroll summary for all employees as PDF."""
+    success, message, period = payroll_controller.get_payroll_period(payroll_id)
+
+    if not success:
+        flash(message, "error")
+        return redirect(url_for("payroll.payroll_list"))
+
+    # Get all details for the period
+    success, message, details = payroll_controller.get_payroll_details_for_period(payroll_id)
+
+    if not success or not details:
+        flash("No payroll details found for this period.", "error")
+        return redirect(url_for("payroll.payroll_list"))
+
+    # Generate PDF
+    pdf_buffer = generate_payroll_summary_pdf(details, period.period_start_date, period.period_end_date)
+
+    # Create filename
+    filename = f"payroll_summary_{period.period_start_date}_to_{period.period_end_date}.pdf"
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/pdf",
     )

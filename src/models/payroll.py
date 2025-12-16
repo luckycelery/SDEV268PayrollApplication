@@ -10,6 +10,7 @@ from typing import Optional
 
 from src.utils.constants import (
     DEPENDENT_STIPEND_PER_DEPENDENT,
+    FEDERAL_TAX_BRACKETS_ANNUAL,
     FEDERAL_TAX_RATE_EMPLOYEE,
     FEDERAL_TAX_RATE_EMPLOYER,
     MEDICAL_DEDUCTION_FAMILY,
@@ -27,6 +28,34 @@ from src.utils.constants import (
 )
 
 from .base_model import BaseModel
+
+
+def _calculate_federal_tax_progressive(annual_taxable_income: float) -> float:
+    """
+    Calculate federal income tax using progressive brackets.
+    
+    NOTE: This function is preserved for future implementation of accurate
+    progressive tax calculation. Currently the project uses a flat 7.65% rate.
+
+    Args:
+        annual_taxable_income: Projected annual taxable income
+
+    Returns:
+        Annual federal tax amount
+    """
+    tax = 0.0
+    previous_limit = 0.0
+
+    for bracket_limit, rate in FEDERAL_TAX_BRACKETS_ANNUAL:
+        if annual_taxable_income <= previous_limit:
+            break
+
+        # Calculate taxable amount in this bracket
+        taxable_in_bracket = min(annual_taxable_income, bracket_limit) - previous_limit
+        tax += taxable_in_bracket * rate
+        previous_limit = bracket_limit
+
+    return tax
 
 
 class PayrollPeriod(BaseModel):
@@ -746,6 +775,10 @@ class PayrollCalculator:
 
         Tax amounts are kept at full precision (4 decimal places) to avoid
         cumulative rounding errors. Only the final net pay should be rounded.
+        
+        NOTE: Uses flat 7.65% federal tax rate per project requirements.
+        Progressive bracket calculation is available in _calculate_federal_tax_progressive()
+        for future implementation.
 
         Args:
             taxable_income: Taxable income (gross pay - medical deduction)
@@ -756,7 +789,10 @@ class PayrollCalculator:
         # Employee taxes (based on taxable income, not gross)
         # Keep full precision - round to 4 decimals to avoid floating point noise
         state_tax = round(taxable_income * STATE_TAX_RATE_IN, 4)
+
+        # Federal tax uses flat 7.65% rate per project requirements
         federal_tax_employee = round(taxable_income * FEDERAL_TAX_RATE_EMPLOYEE, 4)
+
         social_security_employee = round(taxable_income * SOCIAL_SECURITY_RATE_EMPLOYEE, 4)
         medicare_employee = round(taxable_income * MEDICARE_RATE_EMPLOYEE, 4)
         total_employee_taxes = round(

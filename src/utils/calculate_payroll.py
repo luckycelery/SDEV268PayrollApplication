@@ -1,18 +1,25 @@
 """
-Calculate Payroll for a Week
+Calculate Payroll for a Week or Multiple Weeks
 
-This script calculates payroll for all employees for a specified week.
+This script calculates payroll for all employees for a specified week or date range.
+If a multi-week date range is provided, it automatically splits into weekly periods
+(Monday-Sunday) and processes each week separately.
 
 Usage:
     uv run python src/utils/calculate_payroll.py [start_date] [end_date]
 
     If no dates are specified, defaults to first week (Nov 3-9, 2025)
 
-Example:
+Examples:
+    # Single week
     uv run python src/utils/calculate_payroll.py 2025-11-03 2025-11-09
+    
+    # Multi-week (automatically splits into weekly periods)
+    uv run python src/utils/calculate_payroll.py 2025-10-28 2025-11-30
 """
 
 import sys
+from datetime import datetime, timedelta
 
 # Add project root to path for imports
 from constants import PROJECT_ROOT
@@ -96,6 +103,42 @@ def print_detailed_breakdown(detail: PayrollDetail) -> None:
     print(f"                              |  NET PAY:         {format_currency(detail.net_pay):>12}")
 
 
+def generate_weekly_periods(start_date: str, end_date: str) -> list[tuple[str, str]]:
+    """
+    Generate weekly pay periods (Monday-Sunday) for a date range.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+
+    Returns:
+        List of tuples (week_start, week_end) where each week is Monday-Sunday
+    """
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Find the Monday of the week containing start_date
+    # weekday() returns 0=Monday, 6=Sunday
+    days_since_monday = start.weekday()
+    week_start = start - timedelta(days=days_since_monday)
+
+    periods = []
+
+    while week_start <= end:
+        week_end = week_start + timedelta(days=6)  # Sunday
+
+        # Format as strings
+        period_start = week_start.strftime("%Y-%m-%d")
+        period_end = week_end.strftime("%Y-%m-%d")
+
+        periods.append((period_start, period_end))
+
+        # Move to next Monday
+        week_start += timedelta(days=7)
+
+    return periods
+
+
 def main():
     """Main entry point."""
     # Parse dates
@@ -110,30 +153,70 @@ def main():
     print("=" * 60)
     print("Payroll Calculation")
     print("=" * 60)
-    print(f"Period: {start_date} to {end_date}")
+    print(f"Date Range: {start_date} to {end_date}")
+
+    # Generate weekly periods
+    periods = generate_weekly_periods(start_date, end_date)
+
+    if len(periods) > 1:
+        print(f"\nProcessing {len(periods)} weekly pay periods:")
+        for i, (week_start, week_end) in enumerate(periods, 1):
+            print(f"  Week {i}: {week_start} to {week_end}")
 
     # Initialize controller
     controller = PayrollController()
 
-    # Calculate payroll for all employees
-    print("\nCalculating payroll for all employees...")
-    success, message, results, errors = controller.calculate_all_payroll(start_date, end_date)
+    # Process each week
+    all_results = []
+    all_errors = []
 
-    print(f"\n{message}")
+    for week_num, (week_start, week_end) in enumerate(periods, 1):
+        if len(periods) > 1:
+            print(f"\n{'=' * 60}")
+            print(f"WEEK {week_num}: {week_start} to {week_end}")
+            print("=" * 60)
 
-    # Print errors if any (helpful for debugging)
-    if errors:
-        print("\nERRORS encountered:")
-        for error in errors:
-            print(f"  - {error}")
+        # Calculate payroll for this week
+        print("\nCalculating payroll for all employees...")
+        success, message, results, errors = controller.calculate_all_payroll(week_start, week_end)
 
-    if results:
-        print_payroll_summary(results)
+        print(f"\n{message}")
 
-        # Show detailed breakdown option
-        print("\n\nDetailed Breakdown:")
-        for detail in sorted(results, key=lambda d: d.employee_id):
-            print_detailed_breakdown(detail)
+        # Collect errors
+        if errors:
+            print("\nERRORS encountered:")
+            for error in errors:
+                print(f"  - {error}")
+            all_errors.extend(errors)
+
+        # Print results for this week
+        if results:
+            print_payroll_summary(results)
+
+            # Show detailed breakdown
+            print("\n\nDetailed Breakdown:")
+            for detail in sorted(results, key=lambda d: d.employee_id):
+                print_detailed_breakdown(detail)
+
+            all_results.extend(results)
+
+    # Print overall summary for multi-week processing
+    if len(periods) > 1 and all_results:
+        print(f"\n\n{'=' * 60}")
+        print(f"OVERALL SUMMARY ({len(periods)} weeks)")
+        print("=" * 60)
+
+        total_gross = sum(d.gross_pay for d in all_results)
+        total_taxes = sum(d.total_employee_taxes for d in all_results)
+        total_net = sum(d.net_pay for d in all_results)
+
+        print(f"Total Payroll Processed: {len(all_results)} paychecks")
+        print(f"Total Gross Pay:         {format_currency(total_gross)}")
+        print(f"Total Taxes:             {format_currency(total_taxes)}")
+        print(f"Total Net Pay:           {format_currency(total_net)}")
+
+        if all_errors:
+            print(f"\nTotal Errors:            {len(all_errors)}")
 
     print("\nDone!")
 

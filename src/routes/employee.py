@@ -7,10 +7,12 @@ Handles:
 - Paycheck viewing
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, redirect, render_template, request, send_file, session, url_for
 
 from src.controllers.employee_controller import EmployeeController
 from src.controllers.payroll_controller import PayrollController
+from src.models.payroll import PayrollDetail, PayrollPeriod
+from src.utils.pdf_generator import generate_paycheck_pdf
 
 bp = Blueprint("employee", __name__)
 
@@ -162,4 +164,38 @@ def paycheck_detail(payroll_detail_id):
         period=period,
         employee=employee,
         salary_type=salary_type,
+    )
+
+
+@bp.route("/paycheck/<int:payroll_detail_id>/pdf")
+@login_required
+def download_paycheck_pdf(payroll_detail_id):
+    """Download employee's own paycheck as PDF."""
+    employee_id = session.get("employee_id")
+
+    if not employee_id:
+        flash("Employee ID not found.", "error")
+        return redirect(url_for("employee.payroll_history"))
+
+    detail = PayrollDetail.get_by_id(payroll_detail_id)
+
+    if detail is None or detail.employee_id != employee_id:
+        flash("Payroll detail not found or access denied.", "error")
+        return redirect(url_for("employee.payroll_history"))
+
+    period = PayrollPeriod.get_by_id(detail.payroll_id)
+    success, message, employee = employee_controller.get_employee(employee_id)
+
+    # Generate PDF
+    pdf_buffer = generate_paycheck_pdf(detail, period.period_start_date, period.period_end_date)
+
+    # Create filename
+    employee_name = f"{employee.first_name}_{employee.last_name}" if employee else detail.employee_id
+    filename = f"paycheck_{detail.employee_id}_{employee_name}_{period.period_start_date}.pdf"
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/pdf",
     )

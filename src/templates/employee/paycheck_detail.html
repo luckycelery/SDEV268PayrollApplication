@@ -17,10 +17,27 @@
                 <li class="breadcrumb-item active">Paycheck Details</li>
             </ol>
         </nav>
-        <h2><i class="bi bi-receipt me-2"></i>Paycheck Details</h2>
-        <p class="text-muted">
-            Pay Period: {{ period.period_start_date if period else 'N/A' }} to {{ period.period_end_date if period else 'N/A' }}
-        </p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-receipt me-2"></i>Paycheck Details</h2>
+                <p class="text-muted mb-0">
+                    Pay Period: {{ period.period_start_date if period else 'N/A' }} to {{ period.period_end_date if period else 'N/A' }}
+                </p>
+            </div>
+            <div>
+                {% if is_admin_view %}
+                <a href="{{ url_for('payroll.download_paycheck_pdf', payroll_detail_id=payroll.payroll_detail_id) }}"
+                   class="btn btn-success">
+                    <i class="bi bi-file-pdf me-1"></i> Export PDF
+                </a>
+                {% else %}
+                <a href="{{ url_for('employee.download_paycheck_pdf', payroll_detail_id=payroll.payroll_detail_id) }}"
+                   class="btn btn-success">
+                    <i class="bi bi-file-pdf me-1"></i> Export PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -204,9 +221,41 @@
                                     <td class="fw-bold">Medicare:</td>
                                     <td class="text-end text-danger">-${{ "%.2f"|format(payroll.medicare_employee) }}</td>
                                 </tr>
-                                <tr class="table-danger">
-                                    <td class="fw-bold">Total Taxes:</td>
-                                    <td class="text-end fw-bold text-danger">-${{ "%.2f"|format(payroll.total_employee_taxes) }}</td>
+                <tr class="table-danger">
+                    <td class="fw-bold">Total Taxes:</td>
+                    <td class="text-end fw-bold text-danger">-${{ "%.2f"|format(payroll.total_employee_taxes) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+            </div>
+
+            <!-- Employer Taxes (Informational) -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <i class="bi bi-building me-2"></i>Employer Taxes <span class="badge bg-light text-dark">INFO</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-2">These amounts are paid by your employer and do not affect your paycheck.</p>
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Federal Tax:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.federal_tax_employer) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Social Security:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.social_security_employer) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Medicare:</td>
+                                    <td class="text-end">${{ "%.2f"|format(payroll.medicare_employer) }}</td>
+                                </tr>
+                                <tr class="table-info">
+                                    <td class="fw-bold">Total Employer:</td>
+                                    <td class="text-end fw-bold">${{ "%.2f"|format(payroll.total_employer_taxes) }}</td>
                                 </tr>
                             </tbody>
                         </table>

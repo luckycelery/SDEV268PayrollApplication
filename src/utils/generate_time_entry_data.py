@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 # All hourly employees (need time entries)
 hourly_employees = ['E007', 'E008', 'E009', 'E010', 'E013']
 
-# Date range: Oct 1 - Nov 30, 2025
-start_date = datetime(2025, 10, 1)
+# Date range: Sept 29 - Nov 30, 2025
+start_date = datetime(2025, 9, 29)
 end_date = datetime(2025, 11, 30)
 
 entries = []
@@ -35,7 +35,7 @@ while current_date <= end_date:
     current_date += timedelta(days=1)
 
 # Write to CSV
-with open('sample_time_entries.csv', 'w', newline='') as f:
+with open('data/sample_time_entries.csv', 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerows(entries)
 
