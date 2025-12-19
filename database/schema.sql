@@ -1,6 +1,6 @@
 -- =============================================================================
 -- ABC Company Payroll System - Database Schema
--- Python + SQLite3 + tkinter
+-- Python + SQLite3 + Flask
 -- Schema Lock Version
 -- =============================================================================
 
